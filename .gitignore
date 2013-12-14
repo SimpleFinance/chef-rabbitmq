@@ -1,0 +1,8 @@
+*.swp
+/tmp
+/cookbooks
+/.vagrant
+/.librarian
+/.packer
+Cheffile.lock
+Gemfile.lock
