@@ -19,17 +19,24 @@
 #
 # Does a minimal Erlang and RabbitMQ install and adds the necessary pieces
 
+# It is recommended to uncomment the following lines to receive the latest
+# Erlang version, as SSL is poorly supported in older versions.
+# node.default[:erlang][:install_method] = 'esl'
+# node.default[:erlang][:esl][:version] = '1:16.b.3-1'
 include_recipe 'erlang::default'
 
+# For queue and exchange management
 chef_gem 'amqp' do
   action :nothing
 end.run_action(:install)
 
+# For virtualhost, user, and node status management
 chef_gem 'rabbitmq_http_api_client' do
   action :nothing
 end.run_action(:install)
 
-rabbitmq 'application' do
+rabbitmq node[:hostname] do
+  version '3.2.1'
   action :install
 end
 
