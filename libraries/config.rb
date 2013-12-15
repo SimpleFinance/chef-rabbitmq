@@ -22,20 +22,34 @@
 module RabbitMQ
   module Config
 
-    def render_config
+    def render_config(kernel_params, rabbit_params)
+      kernel = render_kernel_parameters(kernel_params)
+      rabbit = render_rabbit_parameters(rabbit_params)
       rendered = <<-eos
 %%% /etc/rabbitmq/rabbitmq.config
 
 [
-#{[render_kernel_parameters, render_rabbit_parameters].join(",\n")}
+#{[kernel, rabbit].join(",\n")}
 ].
       eos
       File.open('/etc/rabbitmq/rabbitmq.config'){|f| f.puts(rendered)}
     end
 
+    def render_env_config(env={})
+      env.each_pair do |var, value|
+        rendered << "#{var}=#{value}"
+      end
+      return rendered
+    end
+
+    def render_erlang_cookie(str)
+      return str
+    end
+
     private
 
-    def render_kernel_parameters
+    def render_kernel_parameters(hash={})
+      formatted = []
       rendered = <<-eos
 {kernel, [
 #{formatted.each{|f| f.prepend('    ').join(",\n")}}
@@ -44,7 +58,8 @@ module RabbitMQ
       return rendered
     end
 
-    def render_rabbit_parameters
+    def render_rabbit_parameters(hash={})
+      formatted = []
       rendered = <<-eos
 {rabbit, [
 #{formatted.each{|f| f.prepend('    ').join(",\n")}}

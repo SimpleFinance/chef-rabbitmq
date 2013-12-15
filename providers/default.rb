@@ -73,14 +73,14 @@ action :install do
 
   # Also render the environment file
   @envconf.path('/etc/rabbitmq/rabbitmq-env.conf')
-  @envconf.content()
+  @envconf.content(render_env_config)
   @envconf.owner('root')
   @envconf.group('root')
   @envconf.mode(00400)
 
   # An erlang cookie is necessary for clustering
   @cookie.path('/var/lib/rabbitmq/.erlang_cookie')
-  @cookie.content()
+  @cookie.content(render_erlang_cookie)
   @cookie.owner(@user)
   @cookie.group(@user)
   @cookie.mode(00400)
