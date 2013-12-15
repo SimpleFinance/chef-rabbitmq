@@ -23,16 +23,18 @@ include RabbitMQ::Config
 
 def initialize(new_resource, run_context)
   super
+  @nodename   = new_resource.nodename
   @user       = new_resource.user
   @version    = new_resource.version
   @checksum   = new_resource.checksum
-  @source_pkg = rabbitmq_source_package
-  @installer  = rabbitmq_install_manager
-  @service    = rabbitmq_service
-  @logdir     = rabbitmq_directory_resource
-  @mnesiadir  = rabbitmq_directory_resource
-  @config     = rabbitmq_file_resource
-  @cookie     = rabbitmq_file_resource
+  @source_pkg = rabbitmq_source_package('rabbitmq.deb')
+  @installer  = rabbitmq_install_manager('rabbitmq')
+  @service    = rabbitmq_service('rabbitmq-server')
+  @logdir     = rabbitmq_directory_resource('/var/log/rabbitmq')
+  @mnesiadir  = rabbitmq_directory_resource('/var/lib/rabbitmq/mnesia')
+  @configdir  = rabbitmq_directory_resource('/etc/rabbitmq')
+  @config     = rabbitmq_file_resource('/etc/rabbitmq/rabbitmq.config')
+  @cookie     = rabbitmq_file_resource('/var/lib/rabbitmq/.erlang_cookie')
 end
 
 # TODO : Un-hardcode paths
@@ -41,11 +43,12 @@ action :install do
 
   @source_pkg.source("https://www.rabbitmq.com/releases/rabbitmq-server/v#{@version}/rabbitmq-server_#{@version}-1_all.deb")
   @source_pkg.path("#{Chef::Config[:file_cache_path]}/rabbitmq-#{@version}.deb")
-  @source_pkd.checksum(@checksum)
+  @source_pkg.checksum(@checksum)
   @source_pkg.run_action(:create)
-  
-  @package.provider(Chef::Provider::Package::Dpkg)
-  @package.run_action(:install)
+
+  @installer.source("#{Chef::Config[:file_cache_path]}/rabbitmq-#{@version}.deb")
+  @installer.provider(Chef::Provider::Package::Dpkg)
+  @installer.run_action(:install)
 
   # Give RabbitMQ a place to log to
   @logdir.path('/var/log/rabbitmq')
@@ -63,9 +66,17 @@ action :install do
   @mnesiadir.recursive(true)
   @mnesiadir.run_action(:create)
 
+  # Prevent weird order of execution problems introduced by Chef.
+  @configdir.path('/etc/rabbitmq')
+  @configdir.owner(@user)
+  @configdir.group(@user)
+  @configdir.mode(00700)
+  @configdir.recursive(true)
+  @configdir.run_action(:create)
+
   # Render RabbitMQ's config file via helper library
   @config.path('/etc/rabbitmq/rabbitmq.config')
-  @config.content(render_config)
+  @config.content(render_config())#node[:rabbitmq][:kernel], node[:rabbitmq][:rabbit]))
   @config.owner('root')
   @config.group('root')
   @config.mode(00400)
@@ -73,7 +84,7 @@ action :install do
 
   # Also render the environment file
   @envconf.path('/etc/rabbitmq/rabbitmq-env.conf')
-  @envconf.content(render_env_config)
+  @envconf.content(render_env_config())
   @envconf.owner('root')
   @envconf.group('root')
   @envconf.mode(00400)
