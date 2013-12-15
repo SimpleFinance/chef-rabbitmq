@@ -5,7 +5,7 @@ Vagrant.configure('2') do |config|
   config.vm.define :rabbitmq do |rabbitmq|
     rabbitmq.vm.hostname = 'rabbitmq'
     rabbitmq.vm.box = ENV['VAGRANT_BOX'] || 'opscode_ubuntu-12.04_chef-provisionerless'
-    rabbitmq.vm.box_url = ENV['VAGRANT_BOX_URL'] || "http://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/#{ami.vm.box}.box"
+    rabbitmq.vm.box_url = ENV['VAGRANT_BOX_URL'] || "http://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/#{rabbitmq.vm.box}.box"
 
     rabbitmq.vm.network :forwarded_port, guest: 5672,  host: 5672
     rabbitmq.vm.network :forwarded_port, guest: 15672, host: 15672
