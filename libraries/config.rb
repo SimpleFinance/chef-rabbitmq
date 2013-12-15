@@ -22,7 +22,7 @@
 module RabbitMQ
   module Config
 
-    def render_config(kernel_params, rabbit_params)
+    def render_config(kernel_params={}, rabbit_params={})
       kernel = render_kernel_parameters(kernel_params)
       rabbit = render_rabbit_parameters(rabbit_params)
       rendered = <<-eos
