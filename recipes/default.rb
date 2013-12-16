@@ -17,26 +17,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Does a minimal Erlang and RabbitMQ install and adds the necessary pieces
+# Does a minimal Erlang and RabbitMQ install and adds the necessary pieces.
+# This recipe is mostly an example of how you might deploy RabbitMQ, but could
+# be used as a foundation.
 
 # It is recommended to uncomment the following lines to receive the latest
 # Erlang version, as SSL is poorly supported in older versions.
-# node.default[:erlang][:install_method] = 'esl'
-# node.default[:erlang][:esl][:version] = '1:16.b.3-1'
+node.default[:erlang][:install_method] = 'esl'
+node.default[:erlang][:esl][:version] = '1:16.b.3-1'
+node.default[:rabbitmq][:version] = '3.2.2'
+node.default[:rabbitmq][:checksum] = '8ab273d0e32b70cc78d58cb0fbc98bcc303673c1b30265d64246544cee830c63'
+
 include_recipe 'erlang::default'
 
-# For queue and exchange management
-chef_gem 'amqp' do
-  action :nothing
-end.run_action(:install)
-
-# For virtualhost, user, and node status management
-chef_gem 'rabbitmq_http_api_client' do
-  action :nothing
-end.run_action(:install)
-
-rabbitmq node[:hostname] do
-  version '3.2.1'
+rabbitmq 'rabbit' do
+  version node[:rabbitmq][:version]
+  checksum node[:rabbitmq][:checksum]
   action :install
 end
 
