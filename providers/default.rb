@@ -34,6 +34,7 @@ def initialize(new_resource, run_context)
   @mnesiadir  = rabbitmq_directory_resource('/var/lib/rabbitmq/mnesia')
   @configdir  = rabbitmq_directory_resource('/etc/rabbitmq')
   @config     = rabbitmq_file_resource('/etc/rabbitmq/rabbitmq.config')
+  @envconf    = rabbitmq_file_resource('/etc/rabbitmq/rabbitmq-env.conf')
   @cookie     = rabbitmq_file_resource('/var/lib/rabbitmq/.erlang_cookie')
 end
 
@@ -91,7 +92,7 @@ action :install do
 
   # An erlang cookie is necessary for clustering
   @cookie.path('/var/lib/rabbitmq/.erlang_cookie')
-  @cookie.content(render_erlang_cookie)
+  @cookie.content(render_erlang_cookie())
   @cookie.owner(@user)
   @cookie.group(@user)
   @cookie.mode(00400)

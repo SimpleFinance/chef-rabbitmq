@@ -32,17 +32,18 @@ module RabbitMQ
 #{[kernel, rabbit].join(",\n")}
 ].
       eos
-      File.open('/etc/rabbitmq/rabbitmq.config'){|f| f.puts(rendered)}
+      return rendered
     end
 
     def render_env_config(env={})
+      rendered = ''
       env.each_pair do |var, value|
         rendered << "#{var}=#{value}"
       end
       return rendered
     end
 
-    def render_erlang_cookie(str)
+    def render_erlang_cookie(str='changeme')
       return str
     end
 
