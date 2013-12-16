@@ -29,29 +29,27 @@ def initialize(new_resource, run_context)
   @permissions = new_resource.permissions
 end
 
-# Adds a new user to RabbitMQ
-# TODO : Resolve with the term 'update' -- update_user also adjusts passwords
-# and tags, so should probably be renamed or aliased to :update
-action :add do
+# TODO : Add an :add alias which does :update -- needs HWRP?
+# Adds and/or modifies a user for RabbitMQ, including permissions on a
+# virtualhost, password, and tags.
+action :update do
   @client.update_user(@user, tags: @tags, password: @password)
+  if @permissions && @vhost
+    Chef::Log.info("Updating #{@user} permissions to #{@permissions} on #{@vhost}")
+    read, write, conf = @permissions.split(" ")
+    @client.update_permissions_of(
+      @vhost, 
+      @user, 
+      read: read, 
+      write: write, 
+      conf: conf
+    )
+  end
   new_resource.updated_by_last_action(false)
 end
 
-# Gives the user permissions to act on a virtualhost
-action :modify do
-  read, write, conf = @permissions.split(" ")
-  @client.update_permissions_of(
-    @vhost, 
-    @user, 
-    read: read, 
-    write: write, 
-    conf: conf
-  )
-  Chef::Log.info @client.list_permissions_of(@vhost, @user)
-end
-
 # Erases the user's permissions on the given virtualhost
-action :clear do
+action :clear_permissions do
   @client.clear_permissions_of(@user, @vhost)
   new_resource.updated_by_last_action(false)
 end

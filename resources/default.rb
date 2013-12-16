@@ -1,4 +1,4 @@
-# resources/user.rb
+# resources/default.rb
 #
 # Author: Simple Finance <ops@simple.com>
 # License: Apache License, Version 2.0
@@ -17,16 +17,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Create, delete, and modify RabbitMQ users
+# Create and delete virtualhosts
 
-# TODO : Add alias for :add
-actions(:update, :clear_permissions, :delete)
-default_action(:update)
+actions(:install, :remove)
+default_action(:install)
 
-attribute(:user, kind_of: String, name_attribute: true)
-attribute(:password, kind_of: String)
-attribute(:tags, kind_of: Array)
-attribute(:permissions, kind_of: String)
-attribute(:vhost, kind_of: String)
-attribute(:opts, kind_of: Hash)
+attribute(:nodename, kind_of: String, name_attribute: true)
+attribute(:user, kind_of: String, default: 'rabbitmq')
+attribute(:version, kind_of: String, required: true)
+attribute(:checksum, kind_of: String)
 

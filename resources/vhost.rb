@@ -19,8 +19,8 @@
 #
 # Create and delete virtualhosts
 
-actions(:create, :delete)
-default_action(:create)
+actions(:add, :delete)
+default_action(:add)
 
 attribute(:vhost, kind_of: String, name_attribute: true)
 attribute(:opts, kind_of: Hash)

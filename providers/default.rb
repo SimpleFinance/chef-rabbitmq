@@ -27,6 +27,7 @@ def initialize(new_resource, run_context)
   @user       = new_resource.user
   @version    = new_resource.version
   @checksum   = new_resource.checksum
+  @dep_gems   = rabbitmq_dependency_gems
   @source_pkg = rabbitmq_source_package('rabbitmq.deb')
   @installer  = rabbitmq_install_manager('rabbitmq')
   @service    = rabbitmq_service('rabbitmq-server')
@@ -41,6 +42,11 @@ end
 # TODO : Un-hardcode paths
 # TODO : Multiplatform ...
 action :install do
+
+  # Install the rabbitmq_http_api_client and amqp gems
+  @dep_gems.each do |gem|
+    gem.run_action(:install)
+  end
 
   @source_pkg.source("https://www.rabbitmq.com/releases/rabbitmq-server/v#{@version}/rabbitmq-server_#{@version}-1_all.deb")
   @source_pkg.path("#{Chef::Config[:file_cache_path]}/rabbitmq-#{@version}.deb")
@@ -136,4 +142,10 @@ end
 
 def rabbitmq_service(name='')
   return Chef::Resource::Service.new(name, @run_context)
+end
+
+def rabbitmq_dependency_gems
+  amqp = Chef::Resource::ChefGem.new('amqp', @run_context)
+  cli = Chef::Resource::ChefGem.new('rabbitmq_http_api_client', @run_context)
+  return amqp, cli
 end
