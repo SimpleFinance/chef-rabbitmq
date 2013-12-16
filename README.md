@@ -36,6 +36,22 @@ which will do a minimal install, demonstrates how you might choose to install
 RabbitMQ, but mostly this cookbook lays down the framework through LWRPs and
 libraries.
 
+#### Configuring RabbitMQ
+This cookbook does *not* automatically configure RabbitMQ. This is an important
+note. However, configuration is managed by really two primary files,
+`rabbitmq.config`, and `rabbitmq-env.conf`. They are rendered by default and
+can be controlled by a couple attribute namespaces.
+
+* `node[:rabbitmq][:env]` controls [RabbitMQ's environment
+  file](http://www.rabbitmq.com/configure.html#define-environment-variables) `rabbitmq-env.conf`
+* `node[:rabbitmq][:kernel]` controls the [kernel
+  configuration](http://www.erlang.org/doc/man/kernel_app.html) in
+  `rabbitmq.config`
+* `node[:rabbitmq][:rabbit]` controls the [RabbitMQ-specific configuration](http://www.rabbitmq.com/configure.html#configuration-file) in
+  `rabbitmq.config`
+* Support for [`mnesia`
+  configuration](http://www.erlang.org/doc/man/mnesia.html) is TODO
+
 ### Resources
 A note about these resources : they all mention an `opts` parameter which maps
 to arguments which are passed into the underlying gem, which is powered by
