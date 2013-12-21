@@ -4,10 +4,12 @@
 	- [Usage](#usage)
 		- [Platform Support](#platform-support)
 		- [About Attributes](#about-attributes)
+		- [Configuring RabbitMQ](#configuring-rabbitmq)
 	- [Resources](#resources)
 		- [rabbitmq](#rabbitmq)
 		- [rabbitmq\_user](#rabbitmq\_user)
 		- [rabbitmq\_vhost](#rabbitmq\_vhost)
+		- [rabbitmq\_config](#rabbitmq\_config)
 	- [TODO](#todo)
 - [Author and License](#author-and-license)
 
