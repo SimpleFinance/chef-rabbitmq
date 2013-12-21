@@ -33,9 +33,6 @@ def initialize(new_resource, run_context)
   @service    = rabbitmq_service('rabbitmq-server')
   @logdir     = rabbitmq_directory_resource('/var/log/rabbitmq')
   @mnesiadir  = rabbitmq_directory_resource('/var/lib/rabbitmq/mnesia')
-  @configdir  = rabbitmq_directory_resource('/etc/rabbitmq')
-  @config     = rabbitmq_file_resource('/etc/rabbitmq/rabbitmq.config')
-  @envconf    = rabbitmq_file_resource('/etc/rabbitmq/rabbitmq-env.conf')
   @cookie     = rabbitmq_file_resource('/var/lib/rabbitmq/.erlang_cookie')
 end
 
@@ -73,29 +70,6 @@ action :install do
   @mnesiadir.recursive(true)
   @mnesiadir.run_action(:create)
 
-  # Prevent weird order of execution problems introduced by Chef.
-  @configdir.path('/etc/rabbitmq')
-  @configdir.owner(@user)
-  @configdir.group(@user)
-  @configdir.mode(00700)
-  @configdir.recursive(true)
-  @configdir.run_action(:create)
-
-  # Render RabbitMQ's config file via helper library
-  @config.path('/etc/rabbitmq/rabbitmq.config')
-  @config.content(render_config())#node[:rabbitmq][:kernel], node[:rabbitmq][:rabbit]))
-  @config.owner('root')
-  @config.group('root')
-  @config.mode(00400)
-  @config.run_action(:create)
-
-  # Also render the environment file
-  @envconf.path('/etc/rabbitmq/rabbitmq-env.conf')
-  @envconf.content(render_env_config())
-  @envconf.owner('root')
-  @envconf.group('root')
-  @envconf.mode(00400)
-
   # An erlang cookie is necessary for clustering
   @cookie.path('/var/lib/rabbitmq/.erlang_cookie')
   @cookie.content(render_erlang_cookie())
@@ -108,13 +82,19 @@ action :install do
   # TODO : Fix, obviously broken.
   @service.provider(Chef::Provider::Service::Init)
   @service.run_action(:start)
-  @service.subscribes(:restart, 'file[/etc/rabbitmq/rabbitmq-env.conf]', :delayed)
-  @service.subscribes(:restart, 'file[/etc/rabbitmq/rabbitmq.config]', :delayed)
   @service.subscribes(:restart, 'file[/var/lib/rabbitmq/.erlang_cookie]', :delayed)
 
-  # We'll always say false, since this resource is higher level and really just
-  # a manager for other resources; they will specify if they were updated.
-  new_resource.updated_by_last_action(false)
+  # A bit ugly, but works.
+  new_resource.updated_by_last_action(
+    @dep_gems.collect do |g| 
+      g.updated_by_last_action? 
+    end.any?                            ||
+    @source_pkg.updated_by_last_action? ||
+    @installer.updated_by_last_action?  ||
+    @service.updated_by_last_action?    || 
+    @logdir.updated_by_last_action?     ||
+    @mnesiadir.updated_by_last_action?  ||
+    @cookie.updated_by_last_action? )
 end
 
 action :remove do
@@ -148,4 +128,10 @@ def rabbitmq_dependency_gems
   amqp = Chef::Resource::ChefGem.new('amqp', @run_context)
   cli = Chef::Resource::ChefGem.new('rabbitmq_http_api_client', @run_context)
   return amqp, cli
+end
+
+def default_env
+  return {
+    'NODENAME' => @nodename
+  }
 end

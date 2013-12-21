@@ -36,3 +36,9 @@ rabbitmq 'rabbit' do
   action :install
 end
 
+rabbitmq_config 'generic' do
+  kernel node[:rabbitmq][:kernel]
+  rabbit node[:rabbitmq][:rabbit]
+  env node[:rabbitmq][:env]
+end
+

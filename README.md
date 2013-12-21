@@ -39,8 +39,9 @@ libraries.
 #### Configuring RabbitMQ
 This cookbook does *not* automatically configure RabbitMQ. This is an important
 note. However, configuration is managed by really two primary files,
-`rabbitmq.config`, and `rabbitmq-env.conf`. They are rendered by default and
-can be controlled by a couple attribute namespaces.
+`rabbitmq.config`, and `rabbitmq-env.conf`. They are rendered by the
+`rabbitmq_config` resource and can be controlled by a couple attribute 
+namespaces. We recommend the following pattern :
 
 * `node[:rabbitmq][:env]` controls [RabbitMQ's environment
   file](http://www.rabbitmq.com/configure.html#define-environment-variables) `rabbitmq-env.conf`
@@ -49,8 +50,12 @@ can be controlled by a couple attribute namespaces.
   `rabbitmq.config`
 * `node[:rabbitmq][:rabbit]` controls the [RabbitMQ-specific configuration](http://www.rabbitmq.com/configure.html#configuration-file) in
   `rabbitmq.config`
-* Support for [`mnesia`
+* A note : Support for [mnesia
   configuration](http://www.erlang.org/doc/man/mnesia.html) is TODO
+
+This avoids attribute collisions and gives a sane structure to these parameters;
+however, all the resource parameters simply take a hash which maps the 
+parameters to values.
 
 ### Resources
 A note about these resources : they all mention an `opts` parameter which maps
@@ -146,7 +151,7 @@ end
 # Create 'pancake' user and give permissions on '/another' vhost
 rabbitmq_user 'pancake' do
   password 'insecure'
-  permissions ".* .* .*"
+  permissions '.* .* .*'
   vhost '/another'
   action :update
 end
@@ -162,7 +167,7 @@ This resource manages virtualhosts.
 
 * Available actions : `:add`, `:delete`
 
-Parameters:
+Parameters :
 * `vhost` : name of the virtualhost to act on
 * `opts` : a hash of options to pass into the management client
 
@@ -170,6 +175,34 @@ Example :
 ``` ruby
 rabbitmq_vhost '/testing' do
   action :add
+end
+```
+
+#### rabbitmq\_config
+Manages rabbitmq.config and rabbitmq-env.conf. Out of the box, the vanilla
+`rabbitmq` resource will give a working configuration. However, if you want to
+change the config, it is recommended you use this resource.
+
+* Available actions : `:render`, `:delete`
+
+Parameters : 
+* `name` : An identifier for the configuration you're using (name attribute)
+* `kernel` : kernel application parameters
+* `rabbit` : RabbitMQ-specific parameters
+* `env` : RabbitMQ environment variables
+
+None of these are required; however, RabbitMQ might fail to boot depending on
+the configuration you feed in (for example, leaving all of these blank will
+prevent RabbitMQ from booting), so use caution. The `default` recipe
+demonstrates how you might choose to deploy this, namespacing each of the
+parameters under `node[:rabbitmq][:<param>]`.
+
+Example : 
+``` ruby
+rabbitmq_config 'ssl' do
+  kernel node[:rabbitmq][:kernel]
+  rabbit node[:rabbitmq][:rabbit]
+  env node[:rabbitmq][:env]  
 end
 ```
 
@@ -183,4 +216,3 @@ end
 Simple Finance \<ops@simple.com\>
 
 Apache License, Version 2.0
-
