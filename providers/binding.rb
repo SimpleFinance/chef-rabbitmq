@@ -19,6 +19,8 @@
 #
 # Declare and delete bindings from exchanges to queues.
 
+include RabbitMQ::Management
+
 def initialize(new_resource, run_context)
   super
   @client      = RabbitMQ::Management.client

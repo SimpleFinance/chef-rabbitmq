@@ -19,6 +19,8 @@
 #
 # Create and delete virtualhosts
 
+include RabbitMQ::Management
+
 def initialize(new_resource, run_context)
   super
   @client = RabbitMQ::Management.client
