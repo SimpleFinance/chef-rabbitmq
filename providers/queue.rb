@@ -1,4 +1,4 @@
-# providers/vhost.rb
+# providers/queue.rb
 #
 # Author: Simple Finance <ops@simple.com>
 # License: Apache License, Version 2.0
@@ -17,18 +17,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Create and delete virtualhosts
+# Declare, manage, and delete RabbitMQ queues.
 
 def initialize(new_resource, run_context)
   super
   @client = RabbitMQ::Management.client(new_resource.opts)
-  @vhost = new_resource.vhost
+  @vhost  = new_resource.vhost
+  @queue  = new_resource.queue
+  @attrs  = new_resource.attrs
 end
 
-action :create do
-  @client.create_vhost(@vhost)
+action :declare do
+  @client.declare_queue(@vhost, @queue, @attrs)
 end
 
 action :delete do
-  @client.delete_vhost(@vhost)
+  @client.delete_vhost(@vhost, @queue)
 end
