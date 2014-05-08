@@ -125,10 +125,9 @@ def rabbitmq_service(name='')
   return Chef::Resource::Service.new(name, @run_context)
 end
 
+# Ensure you always return an array here, so we can add dependencies easily.
 def rabbitmq_dependency_gems
-  amqp = Chef::Resource::ChefGem.new('amqp', @run_context)
-  cli = Chef::Resource::ChefGem.new('rabbitmq_http_api_client', @run_context)
-  return amqp, cli
+  return [Chef::Resource::ChefGem.new('rabbitmq_http_api_client', @run_context)]
 end
 
 # If the user provides new_resource.cookie, the cookie will be populated with
