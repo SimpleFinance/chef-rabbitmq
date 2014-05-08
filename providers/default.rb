@@ -19,7 +19,7 @@
 #
 # Manages a RabbitMQ installation
 
-include RabbitMQ::Config
+require 'securerandom'
 
 def initialize(new_resource, run_context)
   super
@@ -27,6 +27,7 @@ def initialize(new_resource, run_context)
   @user       = new_resource.user
   @version    = new_resource.version
   @checksum   = new_resource.checksum
+  @cookie_str = new_resource.cookie
   @dep_gems   = rabbitmq_dependency_gems
   @source_pkg = rabbitmq_source_package('rabbitmq.deb')
   @installer  = rabbitmq_install_manager('rabbitmq')
@@ -72,7 +73,7 @@ action :install do
 
   # An erlang cookie is necessary for clustering
   @cookie.path('/var/lib/rabbitmq/.erlang_cookie')
-  @cookie.content(render_erlang_cookie())
+  @cookie.content(render_erlang_cookie(@cookie_str))
   @cookie.owner(@user)
   @cookie.group(@user)
   @cookie.mode(00400)
@@ -124,12 +125,23 @@ def rabbitmq_service(name='')
   return Chef::Resource::Service.new(name, @run_context)
 end
 
+# Ensure you always return an array here, so we can add dependencies easily.
 def rabbitmq_dependency_gems
-  amqp = Chef::Resource::ChefGem.new('amqp', @run_context)
-  cli = Chef::Resource::ChefGem.new('rabbitmq_http_api_client', @run_context)
-  return amqp, cli
+  return [Chef::Resource::ChefGem.new('rabbitmq_http_api_client', @run_context)]
 end
 
+# If the user provides new_resource.cookie, the cookie will be populated with
+# that value. Otherwise, generate a random hexidecimal string (any alphanumeric
+# string works, however).
+def render_erlang_cookie(str)
+  if str.nil?
+    return SecureRandom.hex
+  else
+    return str
+  end
+end
+
+# Sane default values to render into the RabbitMQ environment file.
 def default_env
   return {
     'NODENAME' => @nodename

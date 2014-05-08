@@ -41,4 +41,3 @@ rabbitmq_config 'generic' do
   rabbit node[:rabbitmq][:rabbit]
   env node[:rabbitmq][:env]
 end
-
