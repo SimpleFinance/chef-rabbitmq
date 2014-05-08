@@ -102,7 +102,7 @@ Installs RabbitMQ with the management plugin.
 
 * Available actions: `:install`, `:remove`
 
-Parameters :
+Parameters:
 * `nodename` : the name of this RabbitMQ/Erlang node (name attribute)
 * `user` : name of the RabbitMQ user (default: `rabbitmq`)
 * `version` : version of RabbitMQ to install (required)
@@ -128,7 +128,7 @@ change the config, it is recommended you use this resource.
 
 * Available actions: `:render`, `:delete`
 
-Parameters : 
+Parameters: 
 * `nodename` : An identifier for the configuration you're using (name attribute)
 * `kernel` : kernel application parameters
 * `rabbit` : RabbitMQ-specific parameters
@@ -154,9 +154,10 @@ This resource manages users in RabbitMQ. Note that the `:add` action is just an
 alias to `:update`, which will take multiple actions if necessary (e.g., update a
 user's tags and also permissions on the named virtualhost).
 
-* Available actions: `:update`, `:delete`
+* Available actions: `:add`, `:update`, `:delete`
+* Note: `:add` and `:update` are equivalent
 
-Parameters :
+Parameters:
 * `user` : the name of the user to modify (name attribute)
 * `password` : password for the user
 * `tags` : RabbitMQ tags to give this user
@@ -199,7 +200,7 @@ This resource manages virtualhosts.
 
 * Available actions: `:add`, `:delete`
 
-Parameters :
+Parameters:
 * `vhost` : name of the virtualhost to act on
 
 Example: 

@@ -31,22 +31,16 @@ def initialize(new_resource, run_context)
   @permissions = new_resource.permissions
 end
 
-# TODO : Add an :add alias which does :update
+# Adds and/or modifies a user for RabbitMQ, including permissions on a
+# virtualhost, password, and tags.
+action :add do
+  add_or_update_user
+end
+
 # Adds and/or modifies a user for RabbitMQ, including permissions on a
 # virtualhost, password, and tags.
 action :update do
-  @client.update_user(@user, compile_attributes)
-  if @permissions && @vhost
-    Chef::Log.info("Updating #{@user} permissions to #{@permissions} on #{@vhost}")
-    read, write, conf = @permissions.split(" ")
-    @client.update_permissions_of(
-      @vhost, 
-      @user, 
-      read: read, 
-      write: write, 
-      conf: conf
-    )
-  end
+  add_or_update_user
 end
 
 # Erases the user's permissions on the given virtualhost
@@ -60,6 +54,21 @@ action :delete do
 end
 
 private
+
+def add_or_update_user
+  @client.update_user(@user, compile_attributes)
+  if @permissions && @vhost
+    Chef::Log.info("Updating #{@user} permissions to #{@permissions} on #{@vhost}")
+    read, write, conf = @permissions.split(" ")
+    @client.update_permissions_of(
+      @vhost, 
+      @user, 
+      read: read, 
+      write: write, 
+      conf: conf
+    )
+  end
+end
 
 def compile_attributes
   return {
