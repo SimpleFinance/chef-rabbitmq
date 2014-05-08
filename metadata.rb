@@ -6,4 +6,3 @@ description       'Installs RabbitMQ, an Erlang message queue application'
 version           '0.1.0'
 
 depends 'erlang'
-

@@ -23,10 +23,8 @@
 actions(:update, :clear_permissions, :delete)
 default_action(:update)
 
-attribute(:user, kind_of: String, name_attribute: true)
-attribute(:password, kind_of: String)
-attribute(:tags, kind_of: Array)
+attribute(:user,        kind_of: String, name_attribute: true)
+attribute(:password,    kind_of: String, required: true)
+attribute(:tags,        kind_of: Array)
 attribute(:permissions, kind_of: String)
-attribute(:vhost, kind_of: String)
-attribute(:opts, kind_of: Hash)
-
+attribute(:vhost,       kind_of: String)

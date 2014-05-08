@@ -19,9 +19,11 @@
 #
 # Create and delete virtualhosts
 
+include RabbitMQ::Management
+
 def initialize(new_resource, run_context)
   super
-  @client   = RabbitMQ::Management.client(new_resource.opts)
+  @client   = RabbitMQ::Management.client
   @vhost    = new_resource.vhost
   @exchange = new_resource.exchange
   @attrs    = new_resource.attrs
@@ -29,4 +31,8 @@ end
 
 action :declare do
   @client.declare_exchange(@vhost, @exchange, @attrs)
+end
+
+action :delete do
+  Chef::Log.error("Unimplemented method :delete for rabbitmq_exchange resource")
 end

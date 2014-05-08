@@ -1,0 +1,14 @@
+---
+driver:
+  name: vagrant
+
+platforms:
+- name: ubuntu-12.04
+  driver_config:
+    box: opscode_ubuntu-12.04
+
+suites:
+  - name: default
+    run_list:
+      - recipe[apt::default]
+      - recipe[rabbitmq::default]

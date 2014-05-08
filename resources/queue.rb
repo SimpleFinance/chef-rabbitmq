@@ -1,4 +1,4 @@
-# providers/queue.rb
+# resources/queue.rb
 #
 # Author: Simple Finance <ops@simple.com>
 # License: Apache License, Version 2.0
@@ -19,20 +19,9 @@
 #
 # Declare, manage, and delete RabbitMQ queues.
 
-include RabbitMQ::Management
+actions(:declare, :delete)
+default_action(:declare)
 
-def initialize(new_resource, run_context)
-  super
-  @client = RabbitMQ::Management.client
-  @vhost  = new_resource.vhost
-  @queue  = new_resource.queue
-  @attrs  = new_resource.attrs
-end
-
-action :declare do
-  @client.declare_queue(@vhost, @queue, @attrs)
-end
-
-action :delete do
-  @client.delete_vhost(@vhost, @queue)
-end
+attribute(:vhost, kind_of: String, required: true)
+attribute(:queue, kind_of: String, name_attribute: true)
+attribute(:attrs, Kind_of: Hash,   default: {})

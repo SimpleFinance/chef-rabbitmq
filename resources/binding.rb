@@ -1,4 +1,4 @@
-# providers/queue.rb
+# resources/binding.rb
 #
 # Author: Simple Finance <ops@simple.com>
 # License: Apache License, Version 2.0
@@ -17,22 +17,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Declare, manage, and delete RabbitMQ queues.
+# Declare, manage, and delete RabbitMQ bindings.
 
-include RabbitMQ::Management
+actions(:declare, :delete)
+default_action(:declare)
 
-def initialize(new_resource, run_context)
-  super
-  @client = RabbitMQ::Management.client
-  @vhost  = new_resource.vhost
-  @queue  = new_resource.queue
-  @attrs  = new_resource.attrs
-end
-
-action :declare do
-  @client.declare_queue(@vhost, @queue, @attrs)
-end
-
-action :delete do
-  @client.delete_vhost(@vhost, @queue)
-end
+attribute(:binding,     kind_of: String, name_attribute: true)
+attribute(:exchange,    kind_of: String, required: true)
+attribute(:vhost,       kind_of: String, required: true)
+attribute(:queue,       kind_of: String, required: true)
+attribute(:routing_key, kind_of: String)
+attribute(:props_key,   kind_of: String)

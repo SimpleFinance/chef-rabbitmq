@@ -1,4 +1,4 @@
-# resources/default.rb
+# resources/config.rb
 #
 # Author: Simple Finance <ops@simple.com>
 # License: Apache License, Version 2.0
@@ -22,9 +22,9 @@
 actions(:render, :delete)
 default_action(:render)
 
-attribute(:name, kind_of: String, name_attribute: true)
-attribute(:kernel, kind_of: Hash)
-attribute(:rabbit, kind_of: Hash)
-attribute(:env, kind_of: Hash)
-attribute(:config, kind_of: String)
+attribute(:name,    kind_of: String, name_attribute: true)
+attribute(:kernel,  kind_of: Hash)
+attribute(:rabbit,  kind_of: Hash)
+attribute(:env,     kind_of: Hash)
+attribute(:config,  kind_of: String)
 attribute(:envconf, kind_of: String)
