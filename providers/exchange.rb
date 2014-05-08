@@ -1,4 +1,4 @@
-# providers/vhost.rb
+# providers/exchange.rb
 #
 # Author: Simple Finance <ops@simple.com>
 # License: Apache License, Version 2.0
@@ -21,16 +21,13 @@
 
 def initialize(new_resource, run_context)
   super
-  @client = RabbitMQ::Management.client(new_resource.opts)
-  @vhost = new_resource.vhost
+  @client   = RabbitMQ::Management.client(new_resource.opts)
+  @vhost    = new_resource.vhost
+  @exchange = new_resource.exchange
+  @attrs    = new_resource.attrs
 end
 
-action :create do
-  @client.create_vhost(@vhost)
-  new_resource.updated_by_last_action(false)
-end
-
-action :delete do
-  @client.delete_vhost(@vhost)
+action :declare do
+  @client.declare_exchange(@vhost, @exchange, @attrs)
   new_resource.updated_by_last_action(false)
 end

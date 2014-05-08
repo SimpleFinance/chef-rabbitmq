@@ -21,19 +21,19 @@
 
 def initialize(new_resource, run_context)
   super
-  @client = RabbitMQ::Management.client(new_resource.opts)
-  @user = new_resource.user
-  @tags = new_resource.tags
-  @password = new_resource.password
-  @vhost = new_resource.vhost
+  @client      = RabbitMQ::Management.client(new_resource.opts)
+  @user        = new_resource.user
+  @tags        = new_resource.tags
+  @password    = new_resource.password
+  @vhost       = new_resource.vhost
   @permissions = new_resource.permissions
 end
 
-# TODO : Add an :add alias which does :update -- needs HWRP?
+# TODO : Add an :add alias which does :update
 # Adds and/or modifies a user for RabbitMQ, including permissions on a
 # virtualhost, password, and tags.
 action :update do
-  @client.update_user(@user, tags: @tags, password: @password)
+  @client.update_user(@user, compile_attributes)
   if @permissions && @vhost
     Chef::Log.info("Updating #{@user} permissions to #{@permissions} on #{@vhost}")
     read, write, conf = @permissions.split(" ")
@@ -45,18 +45,23 @@ action :update do
       conf: conf
     )
   end
-  new_resource.updated_by_last_action(false)
 end
 
 # Erases the user's permissions on the given virtualhost
 action :clear_permissions do
   @client.clear_permissions_of(@user, @vhost)
-  new_resource.updated_by_last_action(false)
 end
 
 # Deletes the user from RabbitMQ
 action :delete do
   @client.delete_user(@user)
-  new_resource.updated_by_last_action(false)
 end
 
+private
+
+def compile_attributes
+  return {
+    password: @password,
+    tags: @tags
+  }
+end

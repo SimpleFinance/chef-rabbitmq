@@ -1,4 +1,4 @@
-# providers/vhost.rb
+# providers/binding.rb
 #
 # Author: Simple Finance <ops@simple.com>
 # License: Apache License, Version 2.0
@@ -17,20 +17,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Create and delete virtualhosts
+# Declare and delete bindings from exchanges to queues.
 
 def initialize(new_resource, run_context)
   super
-  @client = RabbitMQ::Management.client(new_resource.opts)
-  @vhost = new_resource.vhost
+  @client      = RabbitMQ::Management.client(new_resource.opts)
+  @vhost       = new_resource.vhost
+  @exchange    = new_resource.exchange
+  @queue       = new_resource.queue
+  @binding     = new_resource.binding
+  @routing_key = new_resource.routing_key
+  @props_key   = new_resource.props_key
 end
 
-action :create do
-  @client.create_vhost(@vhost)
-  new_resource.updated_by_last_action(false)
+action :declare do
+  @client.bind_queue(@vhost, @queue, @exchange, @routing_key)
+  #new_resource.updated_by_last_action(false)
 end
 
+# TODO(JD): Fix
 action :delete do
-  @client.delete_vhost(@vhost)
-  new_resource.updated_by_last_action(false)
+  @client.delete_queue_binding(@vhost, @queue, @exchange, @props_key)
+  #new_resource.updated_by_last_action(false)
 end
