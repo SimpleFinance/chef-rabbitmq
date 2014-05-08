@@ -29,10 +29,8 @@ end
 
 action :declare do
   @client.declare_queue(@vhost, @queue, @attrs)
-  #new_resource.updated_by_last_action(false)
 end
 
 action :delete do
   @client.delete_vhost(@vhost, @queue)
-  #new_resource.updated_by_last_action(false)
 end

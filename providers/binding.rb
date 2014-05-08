@@ -32,11 +32,8 @@ end
 
 action :declare do
   @client.bind_queue(@vhost, @queue, @exchange, @routing_key)
-  #new_resource.updated_by_last_action(false)
 end
 
-# TODO(JD): Fix
 action :delete do
   @client.delete_queue_binding(@vhost, @queue, @exchange, @props_key)
-  #new_resource.updated_by_last_action(false)
 end

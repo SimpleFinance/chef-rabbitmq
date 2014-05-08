@@ -29,5 +29,4 @@ end
 
 action :declare do
   @client.declare_exchange(@vhost, @exchange, @attrs)
-  new_resource.updated_by_last_action(false)
 end

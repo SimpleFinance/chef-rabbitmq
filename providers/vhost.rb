@@ -27,10 +27,8 @@ end
 
 action :create do
   @client.create_vhost(@vhost)
-  new_resource.updated_by_last_action(false)
 end
 
 action :delete do
   @client.delete_vhost(@vhost)
-  new_resource.updated_by_last_action(false)
 end
