@@ -4,5 +4,6 @@
 /.vagrant
 /.librarian
 /.packer
+/.kitchen
 Cheffile.lock
 Gemfile.lock
