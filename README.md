@@ -10,6 +10,9 @@
 		- [rabbitmq\_user](#rabbitmq\_user)
 		- [rabbitmq\_vhost](#rabbitmq\_vhost)
 		- [rabbitmq\_config](#rabbitmq\_config)
+		- [rabbitmq\_exchange](#rabbitmq\_exchange)
+		- [rabbitmq\_queue](#rabbitmq\_queue)
+		- [rabbitmq\_binding](#rabbitmq\_binding)
 	- [TODO](#todo)
 - [Author and License](#author-and-license)
 
@@ -97,7 +100,7 @@ Resources attempt to use the same semantics as `rabbitmqctl` for ease of use.
 #### rabbitmq
 Installs RabbitMQ with the management plugin.
 
-* Available actions : `:install`, `:remove`
+* Available actions: `:install`, `:remove`
 
 Parameters :
 * `nodename` : the name of this RabbitMQ/Erlang node (name attribute)
@@ -105,7 +108,7 @@ Parameters :
 * `version` : version of RabbitMQ to install (required)
 * `checksum` : checksum of the RabbitMQ package
 
-Example : 
+Example: 
 ``` ruby
 rabbitmq 'rabbit' do
   version '3.2.2'
@@ -118,12 +121,40 @@ end
 [RabbitMQ downloads page](http://www.rabbitmq.com/releases/rabbitmq-server/)
 and run `shasum -a 256 /path/to/downloaded/file.deb`.
 
+#### rabbitmq\_config
+Manages rabbitmq.config and rabbitmq-env.conf. Out of the box, the vanilla
+`rabbitmq` resource will give a working configuration. However, if you want to
+change the config, it is recommended you use this resource.
+
+* Available actions: `:render`, `:delete`
+
+Parameters : 
+* `nodename` : An identifier for the configuration you're using (name attribute)
+* `kernel` : kernel application parameters
+* `rabbit` : RabbitMQ-specific parameters
+* `env` : RabbitMQ environment variables
+
+None of these are required; however, RabbitMQ might fail to boot depending on
+the configuration you feed in (for example, leaving all of these blank will
+prevent RabbitMQ from booting), so use caution. The `default` recipe
+demonstrates how you might choose to deploy this, namespacing each of the
+parameters under `node[:rabbitmq][:<param>]`.
+
+Example: 
+``` ruby
+rabbitmq_config 'ssl' do
+  kernel node[:rabbitmq][:kernel]
+  rabbit node[:rabbitmq][:rabbit]
+  env node[:rabbitmq][:env]  
+end
+```
+
 #### rabbitmq\_user
 This resource manages users in RabbitMQ. Note that the `:add` action is just an
 alias to `:update`, which will take multiple actions if necessary (e.g., update a
 user's tags and also permissions on the named virtualhost).
 
-* Available actions : `:update`, `:delete`
+* Available actions: `:update`, `:delete`
 
 Parameters :
 * `user` : the name of the user to modify (name attribute)
@@ -132,9 +163,8 @@ Parameters :
 * `permissions` : read, write, configure permissions for this user on the given
   virtualhost (requires `vhost`)
 * `vhost` : the virtualhost to commit changes to this user to
-* `opts` : a hash of options to pass into the management client
 
-Examples : 
+Examples: 
 ``` ruby
 # Create 'waffle' user
 rabbitmq_user 'waffle' do
@@ -167,52 +197,83 @@ end
 #### rabbitmq\_vhost
 This resource manages virtualhosts.
 
-* Available actions : `:add`, `:delete`
+* Available actions: `:add`, `:delete`
 
 Parameters :
 * `vhost` : name of the virtualhost to act on
-* `opts` : a hash of options to pass into the management client
 
-Example : 
+Example: 
 ``` ruby
 rabbitmq_vhost '/testing' do
   action :add
 end
 ```
 
-#### rabbitmq\_config
-Manages rabbitmq.config and rabbitmq-env.conf. Out of the box, the vanilla
-`rabbitmq` resource will give a working configuration. However, if you want to
-change the config, it is recommended you use this resource.
+#### rabbitmq\_exchange
+Adds a RabbitMQ exchange to a given virtualhost.
 
-* Available actions : `:render`, `:delete`
+* Available actions: `:declare`, `:delete`
 
-Parameters : 
-* `name` : An identifier for the configuration you're using (name attribute)
-* `kernel` : kernel application parameters
-* `rabbit` : RabbitMQ-specific parameters
-* `env` : RabbitMQ environment variables
+Parameters:
+* `exchange` : name of the exchange to add
+* `vhost` : virtualhost to which the exchange should be added
+* `attrs` : attributes to give to the exchange
 
-None of these are required; however, RabbitMQ might fail to boot depending on
-the configuration you feed in (for example, leaving all of these blank will
-prevent RabbitMQ from booting), so use caution. The `default` recipe
-demonstrates how you might choose to deploy this, namespacing each of the
-parameters under `node[:rabbitmq][:<param>]`.
-
-Example : 
+Example:
 ``` ruby
-rabbitmq_config 'ssl' do
-  kernel node[:rabbitmq][:kernel]
-  rabbit node[:rabbitmq][:rabbit]
-  env node[:rabbitmq][:env]  
+rabbitmq_exchange 'test.exchange' do
+  vhost '/test'
+  action :declare
+end
+```
+
+#### rabbitmq\_queue
+Adds a RabbitMQ queue to a given virtualhost.
+
+* Available actions: `:declare`, `:delete`
+
+Parameters:
+* `queue` : name of the queue to add
+* `vhost` : virtualhost to add the queue to
+* `attrs` : attributes for the queue
+
+Example:
+``` ruby
+rabbitmq_queue 'test_queue' do
+  vhost '/test'
+  action :declare
+end
+```
+
+#### rabbitmq\_binding
+Binds together a queue and exchange.
+
+* Available actions: `:declare`, `:delete`
+
+Parameters:
+* `binding` : name of the binding to declare
+* `vhost` : virtualhost on which the binding will be declared
+* `exchange` : the exchange to bind the queue to
+* `queue` : the queue to bind
+* `routing_key` : the routing key for the 
+* `props_key` : still unsure ...
+
+Example:
+``` ruby
+rabbitmq_binding 'test_binding' do
+  vhost '/test'
+  exchange 'test.exchange'
+  queue 'test_queue'
+  routing_key ''
 end
 ```
 
 ### TODO
-* Runit support
 * Policies
 * Plugins
-* Exchange/queue management?
+* Runit support
+* Clustering support
+* TESTS! Lots of them!
 
 ## Author and License
 Simple Finance \<ops@simple.com\>
