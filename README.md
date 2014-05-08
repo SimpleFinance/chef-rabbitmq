@@ -32,6 +32,11 @@ has some changes that will require attention in the event of a migration.
 
 It also provides helpers to make RabbitMQ config rendering nice and easy.
 
+Although the `default` recipe will work fine, the recommended pattern is to use
+this cookbook as a library, calling resources as appropriate to install
+RabbitMQ, manage its configuration, and deploy the correct topology to support
+your infrastructure.
+
 #### Platform Support
 This cookbook only officially supports Ubuntu.
 
