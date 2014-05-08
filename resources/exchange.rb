@@ -24,4 +24,4 @@ default_action(:declare)
 
 attribute(:exchange, kind_of: String, name_attribute: true)
 attribute(:vhost,    kind_of: String, required: true)
-attribute(:attrs,    kind_of: String, default: {})
+attribute(:attrs,    kind_of: Hash,   default: {})

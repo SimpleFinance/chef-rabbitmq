@@ -17,13 +17,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Create and delete virtualhosts
+# Manage a RabbitMQ installation and node
 
 actions(:install, :remove)
 default_action(:install)
 
 attribute(:nodename, kind_of: String, name_attribute: true)
-attribute(:user, kind_of: String, default: 'rabbitmq')
-attribute(:version, kind_of: String, required: true)
+attribute(:user,     kind_of: String, default: 'rabbitmq')
+attribute(:version,  kind_of: String, required: true)
 attribute(:checksum, kind_of: String)
-

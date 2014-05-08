@@ -21,7 +21,7 @@
 
 def initialize(new_resource, run_context)
   super
-  @client      = RabbitMQ::Management.client(new_resource.opts)
+  @client      = RabbitMQ::Management.client
   @vhost       = new_resource.vhost
   @exchange    = new_resource.exchange
   @queue       = new_resource.queue
