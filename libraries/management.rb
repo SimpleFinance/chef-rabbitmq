@@ -23,8 +23,8 @@ module RabbitMQ
   module Management
     
     def client(options=defaults)
-      require 'rabbitmq_http_api_client'
-      
+      require 'rabbitmq/http/client'
+
       return RabbitMQ::HTTP::Client.new(
         connection(options),
         ssl: options['ssl']
@@ -34,7 +34,7 @@ module RabbitMQ
     private
 
     def connection(opts)
-      return "http://#{opts['username']}:#{opts['password']}@#{opts['host']}:#{opts['port']}"
+      return "http://#{opts[:username]}:#{opts[:password]}@#{opts[:host]}:#{opts[:port]}"
     end
     
     def defaults
