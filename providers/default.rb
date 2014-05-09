@@ -35,6 +35,7 @@ def initialize(new_resource, run_context)
   @logdir     = rabbitmq_directory_resource('/var/log/rabbitmq')
   @mnesiadir  = rabbitmq_directory_resource('/var/lib/rabbitmq/mnesia')
   @cookie     = rabbitmq_file_resource('/var/lib/rabbitmq/.erlang_cookie')
+  @plugins    = rabbitmq_execute_resource('install plugins')
 end
 
 # TODO : Un-hardcode paths
@@ -79,6 +80,11 @@ action :install do
   @cookie.mode(00400)
   @cookie.run_action(:create)
 
+  # Install the management plugin
+  @plugins.command(plugins_to_enable_command)
+  @plugins.user('root')
+  @plugins.run_action(:run)
+
   # We need to restart ourselves
   # TODO : Fix, obviously broken.
   @service.provider(Chef::Provider::Service::Init)
@@ -105,6 +111,10 @@ end
 
 private
 
+def rabbitmq_execute_resource(cmd='')
+  return Chef::Resource::Execute.new(cmd, @run_context)
+end
+
 def rabbitmq_file_resource(path='')
   return Chef::Resource::File.new(path, @run_context)
 end
@@ -128,6 +138,13 @@ end
 # Ensure you always return an array here, so we can add dependencies easily.
 def rabbitmq_dependency_gems
   return [Chef::Resource::ChefGem.new('rabbitmq_http_api_client', @run_context)]
+end
+
+# This is the worst part of this cookbook for sure, but we don't have a choice
+# unfortunately. Shell out to enable the management plugin, which we'll need in
+# order to add all the topology items.
+def plugins_to_enable_command
+  return "rabbitmq-plugins enable rabbitmq_management"
 end
 
 # If the user provides new_resource.cookie, the cookie will be populated with
