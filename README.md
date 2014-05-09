@@ -270,7 +270,7 @@ rabbitmq_binding 'test_binding' do
   vhost '/test'
   exchange 'test.exchange'
   queue 'test_queue'
-  routing_key ''
+  routing_key 'hi'
 end
 ```
 
