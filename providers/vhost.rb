@@ -27,7 +27,7 @@ def initialize(new_resource, run_context)
   @vhost = new_resource.vhost
 end
 
-action :create do
+action :add do
   @client.create_vhost(@vhost)
 end
 
