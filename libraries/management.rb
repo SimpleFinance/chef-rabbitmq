@@ -21,23 +21,44 @@
 
 module RabbitMQ
   module Management
-    
-    def client(options=defaults)
-      require 'rabbitmq/http/client'
 
-      return RabbitMQ::HTTP::Client.new(
-        connection(options),
-        ssl: options['ssl']
-      )
+    @@opts = {}
+    @@client = nil
+
+    def self.opts
+      return @@opts
+    end
+
+    def self.opts=(opts)
+      @@opts.merge!(opts)
+    end
+    
+    def self.client
+      # Pre-validate the options hash
+      if @@opts.empty?
+        @@opts = self.defaults
+      end
+
+      if !@@client.nil?
+        return @@client
+      else
+        require 'rabbitmq/http/client'
+
+        @@client = RabbitMQ::HTTP::Client.new(
+          self.connection(@@opts),
+          ssl: @@opts['ssl']
+        )
+        return @@client
+      end
     end
 
     private
 
-    def connection(opts)
+    def self.connection(opts)
       return "http://#{opts[:username]}:#{opts[:password]}@#{opts[:host]}:#{opts[:port]}"
     end
     
-    def defaults
+    def self.defaults
       return {
         host: '127.0.0.1',
         port: 15672,
@@ -46,7 +67,6 @@ module RabbitMQ
         ssl: {}
       }
     end
-
   end
 end
 
