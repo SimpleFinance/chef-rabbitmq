@@ -29,6 +29,10 @@ module RabbitMQ
       @client = create_client
     end
 
+    def admin
+      return @opts[:username]
+    end
+
     def create_client
       # Pre-validate the options hash
       if @opts.empty?
