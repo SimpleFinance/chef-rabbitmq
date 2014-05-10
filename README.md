@@ -5,6 +5,7 @@
 		- [Platform Support](#platform-support)
 		- [About Attributes](#about-attributes)
 		- [Configuring RabbitMQ](#configuring-rabbitmq)
+    - [Example Recipe](#example-recipe)
 	- [Resources](#resources)
 		- [rabbitmq](#rabbitmq)
 		- [rabbitmq\_user](#rabbitmq\_user)
@@ -66,6 +67,58 @@ namespaces. We recommend the following pattern :
 This avoids attribute collisions and gives a sane structure to these parameters;
 however, all the resource parameters simply take a hash which maps the 
 parameters to values.
+
+#### Example Recipe
+The following is an example of how one might use this cookbook to install and
+manage RabbitMQ.
+
+``` ruby
+node.override[:erlang][:install_method] = 'esl'
+node.override[:erlang][:esl][:version] = '1:16.b.3-1'
+node.override[:rabbitmq][:version] = '3.2.2'
+node.override[:rabbitmq][:checksum] = '8ab273d0e32b70cc78d58cb0fbc98bcc303673c1b30265d64246544cee830c63'
+
+include_recipe 'erlang::default'
+
+rabbitmq 'rabbit' do
+  version node[:rabbitmq][:version]
+  checksum node[:rabbitmq][:checksum]
+  action :install
+end
+
+rabbitmq_config 'rabbit' do
+  kernel node[:rabbitmq][:kernel]
+  rabbit node[:rabbitmq][:rabbit]
+  env node[:rabbitmq][:env]
+end
+
+rabbitmq_vhost '/test' do
+  action :add
+end
+
+rabbitmq_user 'tester' do
+  password 'hi'
+  action :update
+end
+
+rabbitmq_exchange 'test.exchange' do
+  vhost '/test'
+  action :declare
+end
+
+rabbitmq_queue 'my_queue' do
+  vhost '/test'
+  action :declare
+end
+
+rabbitmq_binding 'my_binding' do
+  vhost '/test'
+  exchange 'test.exchange'
+  queue 'my_queue'
+  action :declare
+end
+
+```
 
 ### Resources
 A note about these resources : they all mention an `opts` parameter which maps
