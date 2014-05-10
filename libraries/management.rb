@@ -41,7 +41,6 @@ module RabbitMQ
         require 'rabbitmq/http/client'
 
         endpoint = "http://#{@opts[:host]}:#{@opts[:port]}"
-        Chef::Log.info("ENDPOINT: #{endpoint}")
         @client = RabbitMQ::HTTP::Client.new(
           endpoint,
           username: @opts[:username],
