@@ -20,53 +20,48 @@
 # Administrative management helpers for a RabbitMQ node
 
 module RabbitMQ
-  module Management
+  class Manager
+    attr_accessor(:opts, :client)
 
-    @@opts = {}
-    @@client = nil
-
-    def self.opts
-      return @@opts
+    def initialize(data={})
+      @opts   = {}
+      @data   = data || {}
+      @client = create_client
     end
 
-    def self.opts=(opts)
-      @@opts.merge!(opts)
-    end
-    
-    def self.client
+    def create_client
       # Pre-validate the options hash
-      if @@opts.empty?
-        @@opts = self.defaults
+      if @opts.empty?
+        @opts.merge!(defaults(@data))
       end
 
-      if !@@client.nil?
-        return @@client
+      if !@client.nil?
+        return @client
       else
         require 'rabbitmq/http/client'
 
-        @@client = RabbitMQ::HTTP::Client.new(
-          self.connection(@@opts),
-          ssl: @@opts['ssl']
+        endpoint = "http://#{@opts[:host]}:#{@opts[:port]}"
+        Chef::Log.info("ENDPOINT: #{endpoint}")
+        @client = RabbitMQ::HTTP::Client.new(
+          endpoint,
+          username: @opts[:username],
+          password: @opts[:password],
+          ssl: @opts[:ssl]
         )
-        return @@client
+        return @client
       end
     end
 
     private
 
-    def self.connection(opts)
-      return "http://#{opts[:username]}:#{opts[:password]}@#{opts[:host]}:#{opts[:port]}"
-    end
-    
-    def self.defaults
+    def defaults(data={})
       return {
-        host: '127.0.0.1',
-        port: 15672,
-        username: 'guest',
-        password: 'guest',
-        ssl: {}
+        host: data.fetch('admin_host', '127.0.0.1'),
+        port: data.fetch('admin_port', 15672),
+        username: data.fetch('admin_user', 'guest'),
+        password: data.fetch('admin_pass', 'guest'),
+        ssl: data.fetch('admin_ssl_opts', {})
       }
     end
   end
 end
-

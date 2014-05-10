@@ -86,10 +86,8 @@ action :install do
   @plugins.run_action(:run)
 
   # We need to restart ourselves
-  # TODO : Fix, obviously broken.
   @service.provider(Chef::Provider::Service::Init)
-  @service.run_action(:start)
-  @service.subscribes(:restart, 'file[/var/lib/rabbitmq/.erlang_cookie]', :delayed)
+  @service.run_action(:restart)
 
   # A bit ugly, but works.
   new_resource.updated_by_last_action(
