@@ -34,13 +34,11 @@ end
 action :render do
   @service.run_action(:nothing)
 
-  # TODO : Configurable user?
   @config.path('/etc/rabbitmq/rabbitmq.config')
   @config.content(render_config(@kernel, @rabbit))
   @config.owner('rabbitmq')
   @config.group('rabbitmq')
   @config.mode(00400)
-  @config.notifies(:restart, @service, :delayed)
   @config.run_action(:create)
 
   @envconf.path('/etc/rabbitmq/rabbitmq-env.conf')
@@ -48,8 +46,13 @@ action :render do
   @envconf.owner('rabbitmq')
   @envconf.group('rabbitmq')
   @envconf.mode(00400)
-  @envconf.notifies(:restart, @service, :delayed)
   @envconf.run_action(:create)
+
+  if requires_restart?
+    @service.run_action(:restart)
+  else
+    @service.run_action(:nothing)
+  end
 
   new_resource.updated_by_last_action(
     @envconf.updated_by_last_action? || @config.updated_by_last_action? )
@@ -105,6 +108,12 @@ end
 
 def rabbitmq_service_handle(name='rabbitmq-server')
   return Chef::Resource::Service.new(name, @run_context)
+end
+
+# Restarts RabbitMQ if either of the environment config or the general config
+# have changed.
+def requires_restart?
+  return @config.updated_by_last_action? || @envconf.updated_by_last_action?
 end
 
 # See https://www.rabbitmq.com/configure.html#define-environment-variables

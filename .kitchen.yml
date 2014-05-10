@@ -6,6 +6,7 @@ platforms:
 - name: ubuntu-12.04
   driver_config:
     box: opscode_ubuntu-12.04
+    require_chef_omnibus: '11.8.2'
 
 suites:
   - name: default

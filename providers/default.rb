@@ -85,11 +85,14 @@ action :install do
   @plugins.user('root')
   @plugins.run_action(:run)
 
-  # We need to restart ourselves
-  # TODO : Fix, obviously broken.
+  # We need to restart ourselves first time. Otherwise, only restart if the
+  # Erlang cookie has changed.
   @service.provider(Chef::Provider::Service::Init)
-  @service.run_action(:start)
-  @service.subscribes(:restart, 'file[/var/lib/rabbitmq/.erlang_cookie]', :delayed)
+  if requires_restart?
+    @service.run_action(:restart)
+  else
+    @service.run_action(:nothing)
+  end
 
   # A bit ugly, but works.
   new_resource.updated_by_last_action(
@@ -156,6 +159,12 @@ def render_erlang_cookie(str)
   else
     return str
   end
+end
+
+# Returns true if the RabbitMQ server requires a restart (so that it can for
+# example pick up configuration changes).
+def requires_restart?
+  return @cookie.updated_by_last_action?
 end
 
 # Sane default values to render into the RabbitMQ environment file.

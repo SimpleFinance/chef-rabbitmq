@@ -19,11 +19,10 @@
 #
 # Declare and delete bindings from exchanges to queues.
 
-include RabbitMQ::Management
-
 def initialize(new_resource, run_context)
   super
-  @client      = RabbitMQ::Management.client
+  @manager     = RabbitMQ::Manager.new(node[:rabbitmq])
+  @client      = @manager.client
   @vhost       = new_resource.vhost
   @exchange    = new_resource.exchange
   @queue       = new_resource.queue
@@ -33,6 +32,17 @@ def initialize(new_resource, run_context)
 end
 
 action :declare do
+  # See http://www.rabbitmq.com/access-control.html for a more in-depth
+  # explanation of these permissions. Full access is required to bind a queue
+  # and exchange.
+  # TODO: Write a revocation handler for end-of-run
+  @client.update_permissions_of(
+    @vhost,
+    @manager.admin,
+    read: '.*',
+    write: '.*',
+    configure: '.*'
+  )
   @client.bind_queue(@vhost, @queue, @exchange, @routing_key)
 end
 
