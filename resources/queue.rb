@@ -24,4 +24,4 @@ default_action(:declare)
 
 attribute(:vhost, kind_of: String, required: true)
 attribute(:queue, kind_of: String, name_attribute: true)
-attribute(:attrs, Kind_of: Hash,   default: {})
+attribute(:attrs, kind_of: Hash,   default: {})

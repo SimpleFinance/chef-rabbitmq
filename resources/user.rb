@@ -25,6 +25,6 @@ default_action(:update)
 
 attribute(:user,        kind_of: String, name_attribute: true)
 attribute(:password,    kind_of: String, required: true)
-attribute(:tags,        kind_of: Array)
+attribute(:tags,        kind_of: String, default: 'user')
 attribute(:permissions, kind_of: String)
 attribute(:vhost,       kind_of: String)
