@@ -119,12 +119,12 @@ end
 # See https://www.rabbitmq.com/configure.html#define-environment-variables
 def env_defaults
   return {
-    'NODENAME' => 'rabbit',
-    'NODE_PORT' => '5671',
-    'NODE_IP_ADDRESS' => '""',
-    'CONFIG_FILE' => '/etc/rabbitmq/rabbitmq',
-    'MNESIA_BASE' => '/var/lib/rabbitmq/mnesia',
-    'LOG_BASE' => '/var/log/rabbitmq'
+    NODENAME: 'rabbit',
+    NODE_PORT: '5671',
+    NODE_IP_ADDRESS: '""',
+    CONFIG_FILE: '/etc/rabbitmq/rabbitmq',
+    MNESIA_BASE: '/var/lib/rabbitmq/mnesia',
+    LOG_BASE: '/var/log/rabbitmq'
   }
 end
 
@@ -136,6 +136,6 @@ end
 # See https://www.rabbitmq.com/configure.html#configuration-file
 def rabbit_defaults
   return {
-    'tcp_listeners' => '[5672]'
+    tcp_listeners: [5672]
   }
 end
