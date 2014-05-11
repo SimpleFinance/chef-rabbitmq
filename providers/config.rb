@@ -66,11 +66,9 @@ end
 private
 
 def render_config(kernel_params, rabbit_params)
-  kernel = render_kernel_parameters(kernel_params)
-  rabbit = render_rabbit_parameters(rabbit_params)
-  return <<-eos
-[\n#{[kernel, rabbit].join(",\n")}\n].
-  eos
+  kernel = render_erlang_parameters('kernel', kernel_params)
+  rabbit = render_erlang_parameters('rabbit', rabbit_params)
+  return "[\n#{[kernel, rabbit].join(",\n")}\n].\n"
 end
 
 def render_env_config(env)
@@ -80,26 +78,20 @@ def render_env_config(env)
   return env.collect{|k,v| "#{k}=#{v}"}.join("\n")
 end
 
-def render_kernel_parameters(hash)
-  if hash.nil?
-    hash = kernel_defaults
+def render_erlang_parameters(name, hash={})
+  strs = hash.collect do |k,v|
+    str = "    {#{k.to_s}, "
+    if v.is_a?(Hash)
+      str << "[\n"
+      buffer = " "*(8 + k.length)
+      str << v.collect{|p,n| "#{buffer}{#{p.to_s}, #{n.to_s}}"}.join(",\n")
+      str << "]}"
+    else
+      str << v.to_s
+      str << "}"
+    end
   end
-  return <<-eos
-  {kernel, [
-#{hash.collect{|k,v| "    {#{k}, #{v}}"}.join(",\n")}
-  ]}
-eos
-end
-
-def render_rabbit_parameters(hash)
-  if hash.nil?
-    hash = rabbit_defaults
-  end
-  return <<-eos
-  {rabbit, [
-#{hash.collect{|k,v| "    {#{k}, #{v}}"}.join(",\n")}
-  ]}
-  eos
+  return "  {#{name}, [\n#{strs.join(",\n")}\n  ]}"
 end
 
 def rabbitmq_file_resource(path='')
@@ -119,12 +111,12 @@ end
 # See https://www.rabbitmq.com/configure.html#define-environment-variables
 def env_defaults
   return {
-    'NODENAME' => 'rabbit',
-    'NODE_PORT' => '5671',
-    'NODE_IP_ADDRESS' => '""',
-    'CONFIG_FILE' => '/etc/rabbitmq/rabbitmq',
-    'MNESIA_BASE' => '/var/lib/rabbitmq/mnesia',
-    'LOG_BASE' => '/var/log/rabbitmq'
+    NODENAME: 'rabbit',
+    NODE_PORT: '5671',
+    NODE_IP_ADDRESS: '""',
+    CONFIG_FILE: '/etc/rabbitmq/rabbitmq',
+    MNESIA_BASE: '/var/lib/rabbitmq/mnesia',
+    LOG_BASE: '/var/log/rabbitmq'
   }
 end
 
@@ -136,6 +128,6 @@ end
 # See https://www.rabbitmq.com/configure.html#configuration-file
 def rabbit_defaults
   return {
-    'tcp_listeners' => '[5672]'
+    tcp_listeners: [5672]
   }
 end
