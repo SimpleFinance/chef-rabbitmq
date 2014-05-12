@@ -328,7 +328,7 @@ rabbitmq_binding 'test_binding' do
 end
 ```
 
-#### rabbitmq\_binding
+#### rabbitmq\_policy
 Applies a [policy](https://www.rabbitmq.com/parameters.html#policies) to a RabbitMQ virtualhost.
 
 * Available actions: `:set`, `:clear`
