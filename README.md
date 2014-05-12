@@ -131,7 +131,7 @@ If you want to change any of these parameters, there are special attributes
 that you can set which will automatically override the corresponding value.
 They reside under `node[:rabbitmq]` and are defined as follows:
 
-``` json
+``` ruby
 {
   admin_host: '127.0.0.1',
   admin_port: 15672,
