@@ -34,19 +34,19 @@ has some changes that will require attention in the event of a migration.
 
 It also provides helpers to make RabbitMQ config rendering nice and easy.
 
-Although the `default` recipe will work fine, the recommended pattern is to use
+Although the "Example Recipe" will work fine, the recommended pattern is to use
 this cookbook as a library, calling resources as appropriate to install
 RabbitMQ, manage its configuration, and deploy the correct topology to support
 your infrastructure.
 
 #### Platform Support
-This cookbook only officially supports Ubuntu.
+This cookbook only officially supports Ubuntu. Pull requests accepted for other
+operating systems!
 
 #### About Attributes
-This cookbook does not ship with attributes by default. The `default` recipe,
-which will do a minimal install, demonstrates how you might choose to install
-RabbitMQ, but mostly this cookbook lays down the framework through LWRPs and
-libraries.
+This cookbook does not ship with attributes by default. The "Example Recipe"
+below demonstrates how you might choose to install RabbitMQ, but mostly this 
+cookbook lays down the framework through LWRPs and libraries.
 
 #### Configuring RabbitMQ
 This cookbook does *not* automatically configure RabbitMQ. This is an important
@@ -122,37 +122,27 @@ end
 ```
 
 ### Resources
-A note about these resources : they all mention an `opts` parameter which maps
-to arguments which are passed into the underlying gem, which is powered by
-[RabbitMQ's management plugin](http://www.rabbitmq.com/management.html). The 
-`opts` parameter looks like this by default :
+This cookbook uses the Management API to power everything. As such, it will
+default to the following URL for making changes:
 
-``` ruby
+`http://guest:guest@127.0.0.1:15672`
+
+If you want to change any of these parameters, there are special attributes
+that you can set which will automatically override the corresponding value.
+They reside under `node[:rabbitmq]` and are defined as follows:
+
+``` json
 {
-  host: '127.0.0.1',
-  port: 15672,
-  username: 'guest',
-  password: 'guest',
-  ssl: {}
+  admin_host: '127.0.0.1',
+  admin_port: 15672,
+  admin_user: 'guest',
+  admin_pass: 'guest',
+  admin_ssl_opts: {}
 }
 ```
 
-You can override any of these options with the `opts` parameter. In particular,
-you might want to override the `ssl` subkey to enable SSL for the session. It 
-takes arguments like so :
-
-``` ruby
-{
-  ...
-  ssl: {
-    client_cer: '',
-    client_key: '',
-    ca_file: '',
-    ca_path: '',
-    cert_store: ''
-  }
-}
-```
+SSL support has not been thoroughly tested and so might be buggy! Apologies for
+this, but fixes soon.
 
 Resources attempt to use the same semantics as `rabbitmqctl` for ease of use.
 
