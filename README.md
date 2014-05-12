@@ -14,6 +14,7 @@
 		- [rabbitmq\_exchange](#rabbitmq\_exchange)
 		- [rabbitmq\_queue](#rabbitmq\_queue)
 		- [rabbitmq\_binding](#rabbitmq\_binding)
+		- [rabbitmq\_policy](#rabbitmq\_policy)
 	- [TODO](#todo)
 - [Author and License](#author-and-license)
 
@@ -327,8 +328,32 @@ rabbitmq_binding 'test_binding' do
 end
 ```
 
+#### rabbitmq\_binding
+Applies a [policy](https://www.rabbitmq.com/parameters.html#policies) to a RabbitMQ virtualhost.
+
+* Available actions: `:set`, `:clear`
+
+Parameters:
+* `name` : the name of the policy (name attribute)
+* `vhost` : virtualhost on which the policy will be applied
+* `pattern` : a regular expression for which queues/exchanges the policy will
+  filter for
+* `definition` : hash representing the exact parameters to set
+* `priority` : priority of the policy (precedence increases with numeric value)
+* `apply_to` : which of `'queues'`, `'exchanges'`, or `'all'` to apply the
+  policy to
+
+Example:
+``` ruby
+rabbitmq_policy 'ha-all' do
+  vhost '/test'
+  pattern '.*'
+  definition {'ha-mode' => 'all', 'ha-sync-mode' => 'automatic'}
+  priority 1
+end
+```
+
 ### TODO
-* Policies
 * Plugins
 * Runit support
 * Clustering support
