@@ -3,6 +3,6 @@ maintainer        'Simple Finance'
 maintainer_email  'ops@simple.com'
 license           'Apache 2.0'
 description       'Installs RabbitMQ, an Erlang message queue application'
-version           '1.1.0'
+version           '1.2.0'
 
 depends 'erlang'
