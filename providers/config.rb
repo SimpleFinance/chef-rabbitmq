@@ -34,19 +34,23 @@ end
 action :render do
   @service.run_action(:nothing)
 
-  @config.path('/etc/rabbitmq/rabbitmq.config')
-  @config.content(render_config(@kernel, @rabbit))
-  @config.owner('rabbitmq')
-  @config.group('rabbitmq')
-  @config.mode(00400)
-  @config.run_action(:create)
+  if @kernel || @rabbit
+    @config.path('/etc/rabbitmq/rabbitmq.config')
+    @config.content(render_config(@kernel, @rabbit))
+    @config.owner('rabbitmq')
+    @config.group('rabbitmq')
+    @config.mode(00400)
+    @config.run_action(:create)
+  end
 
-  @envconf.path('/etc/rabbitmq/rabbitmq-env.conf')
-  @envconf.content(render_env_config(@env))
-  @envconf.owner('rabbitmq')
-  @envconf.group('rabbitmq')
-  @envconf.mode(00400)
-  @envconf.run_action(:create)
+  if @env
+    @envconf.path('/etc/rabbitmq/rabbitmq-env.conf')
+    @envconf.content(render_env_config(@env))
+    @envconf.owner('rabbitmq')
+    @envconf.group('rabbitmq')
+    @envconf.mode(00400)
+    @envconf.run_action(:create)
+  end
 
   if requires_restart?
     @service.run_action(:restart)
