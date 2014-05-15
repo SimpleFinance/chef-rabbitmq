@@ -66,9 +66,16 @@ end
 private
 
 def render_config(kernel_params, rabbit_params)
-  kernel = render_erlang_parameters('kernel', kernel_params)
-  rabbit = render_erlang_parameters('rabbit', rabbit_params)
-  return "[\n#{[kernel, rabbit].join(",\n")}\n].\n"
+  params = []
+  if @kernel
+    kernel = render_erlang_parameters('kernel', kernel_params)
+    params << kernel
+  end
+  if @rabbit
+    rabbit = render_erlang_parameters('rabbit', rabbit_params)
+    params << rabbit
+  end
+  return "[\n#{params.join(",\n")}\n].\n"
 end
 
 def render_env_config(env)
