@@ -34,19 +34,23 @@ end
 action :render do
   @service.run_action(:nothing)
 
-  @config.path('/etc/rabbitmq/rabbitmq.config')
-  @config.content(render_config(@kernel, @rabbit))
-  @config.owner('rabbitmq')
-  @config.group('rabbitmq')
-  @config.mode(00400)
-  @config.run_action(:create)
+  if @kernel || @rabbit
+    @config.path('/etc/rabbitmq/rabbitmq.config')
+    @config.content(render_config(@kernel, @rabbit))
+    @config.owner('rabbitmq')
+    @config.group('rabbitmq')
+    @config.mode(00400)
+    @config.run_action(:create)
+  end
 
-  @envconf.path('/etc/rabbitmq/rabbitmq-env.conf')
-  @envconf.content(render_env_config(@env))
-  @envconf.owner('rabbitmq')
-  @envconf.group('rabbitmq')
-  @envconf.mode(00400)
-  @envconf.run_action(:create)
+  if @env
+    @envconf.path('/etc/rabbitmq/rabbitmq-env.conf')
+    @envconf.content(render_env_config(@env))
+    @envconf.owner('rabbitmq')
+    @envconf.group('rabbitmq')
+    @envconf.mode(00400)
+    @envconf.run_action(:create)
+  end
 
   if requires_restart?
     @service.run_action(:restart)
@@ -66,16 +70,22 @@ end
 private
 
 def render_config(kernel_params, rabbit_params)
-  kernel = render_erlang_parameters('kernel', kernel_params)
-  rabbit = render_erlang_parameters('rabbit', rabbit_params)
-  return "[\n#{[kernel, rabbit].join(",\n")}\n].\n"
+  params = []
+  if @kernel
+    kernel = render_erlang_parameters('kernel', kernel_params)
+    params << kernel
+  end
+  if @rabbit
+    rabbit = render_erlang_parameters('rabbit', rabbit_params)
+    params << rabbit
+  end
+  return "[\n#{params.join(",\n")}\n].\n"
 end
 
 def render_env_config(env)
-  if env.nil?
-    env = env_defaults
+  if env
+    return env.collect{|k,v| "#{k}=#{v}"}.join("\n")
   end
-  return env.collect{|k,v| "#{k}=#{v}"}.join("\n")
 end
 
 def render_erlang_parameters(name, hash={})
@@ -106,28 +116,4 @@ end
 # have changed.
 def requires_restart?
   return @config.updated_by_last_action? || @envconf.updated_by_last_action?
-end
-
-# See https://www.rabbitmq.com/configure.html#define-environment-variables
-def env_defaults
-  return {
-    NODENAME: 'rabbit',
-    NODE_PORT: '5671',
-    NODE_IP_ADDRESS: '""',
-    CONFIG_FILE: '/etc/rabbitmq/rabbitmq',
-    MNESIA_BASE: '/var/lib/rabbitmq/mnesia',
-    LOG_BASE: '/var/log/rabbitmq'
-  }
-end
-
-# See http://www.erlang.org/doc/man/kernel_app.html
-def kernel_defaults
-  return {}
-end
-
-# See https://www.rabbitmq.com/configure.html#configuration-file
-def rabbit_defaults
-  return {
-    tcp_listeners: [5672]
-  }
 end
