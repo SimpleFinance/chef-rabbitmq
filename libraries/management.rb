@@ -20,39 +20,29 @@
 # Administrative management helpers for a RabbitMQ node
 
 module RabbitMQ
-  class Manager
-    attr_accessor(:opts, :client)
+  module Management
 
-    def initialize(opts={})
-      @opts   = opts
-      @client = create_client
-    end
-
-    def admin
-      return @opts[:username]
-    end
-
-    def create_client
+    def new_management_object(opts={})
       require 'rabbitmq/http/client'
 
-      @opts.merge!(defaults)
+      opts = defaults.merge!(opts)
       return RabbitMQ::HTTP::Client.new(
-        "http://#{@opts[:host]}:#{@opts[:port]}",
-        username: @opts[:username],
-        password: @opts[:password],
-        ssl: @opts[:ssl]
+        "http://#{opts[:host]}:#{opts[:port]}",
+        username: opts[:username],
+        password: opts[:password],
+        ssl: opts[:ssl]
       )
     end
 
     private
 
-    def defaults(data={})
+    def defaults
       return {
-        host: data.fetch('admin_host', '127.0.0.1'),
-        port: data.fetch('admin_port', 15672),
-        username: data.fetch('admin_user', 'guest'),
-        password: data.fetch('admin_pass', 'guest'),
-        ssl: data.fetch('admin_ssl_opts', {})
+        host: '127.0.0.1',
+        port: 15672,
+        username: 'guest',
+        password: 'guest',
+        ssl: {}
       }
     end
   end

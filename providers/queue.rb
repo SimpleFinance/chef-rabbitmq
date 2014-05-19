@@ -19,9 +19,11 @@
 #
 # Declare, manage, and delete RabbitMQ queues.
 
+include RabbitMQ::Management
+
 def initialize(new_resource, run_context)
   super
-  @client = RabbitMQ::Manager.new(node[:rabbitmq]).client
+  @client = new_management_object(node[:rabbitmq])
   @vhost  = new_resource.vhost
   @queue  = new_resource.queue
   @attrs  = new_resource.attrs
