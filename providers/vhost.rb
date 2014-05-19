@@ -19,10 +19,11 @@
 #
 # Create and delete virtualhosts
 
+include RabbitMQ::Management
+
 def initialize(new_resource, run_context)
   super
-  @manager = RabbitMQ::Manager.new(node[:rabbitmq])
-  @client  = @manager.client
+  @client  = new_management_object(node[:rabbitmq])
   @vhost   = new_resource.vhost
 end
 
@@ -30,7 +31,7 @@ action :add do
   @client.create_vhost(@vhost)
   @client.update_permissions_of(
     @vhost,
-    @manager.admin,
+    rabbitmq_admin,
     read: '',
     write: '',
     configure: '.*'

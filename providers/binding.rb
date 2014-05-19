@@ -19,10 +19,11 @@
 #
 # Declare and delete bindings from exchanges to queues.
 
+include RabbitMQ::Management
+
 def initialize(new_resource, run_context)
   super
-  @manager     = RabbitMQ::Manager.new(node[:rabbitmq])
-  @client      = @manager.client
+  @client      = new_management_object(node[:rabbitmq])
   @vhost       = new_resource.vhost
   @exchange    = new_resource.exchange
   @queue       = new_resource.queue
@@ -38,7 +39,7 @@ action :declare do
   # TODO: Write a revocation handler for end-of-run
   @client.update_permissions_of(
     @vhost,
-    @manager.admin,
+    rabbitmq_admin,
     read: '.*',
     write: '.*',
     configure: '.*'
