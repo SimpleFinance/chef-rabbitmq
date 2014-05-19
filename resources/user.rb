@@ -19,8 +19,7 @@
 #
 # Create, delete, and modify RabbitMQ users
 
-# TODO : Add alias for :add
-actions(:update, :clear_permissions, :delete)
+actions(:add, :update, :clear_permissions, :delete)
 default_action(:update)
 
 attribute(:user,        kind_of: String, name_attribute: true)
