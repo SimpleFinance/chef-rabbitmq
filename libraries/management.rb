@@ -23,9 +23,8 @@ module RabbitMQ
   class Manager
     attr_accessor(:opts, :client)
 
-    def initialize(data={})
-      @opts   = {}
-      @data   = data || {}
+    def initialize(opts={})
+      @opts   = opts
       @client = create_client
     end
 
@@ -34,25 +33,15 @@ module RabbitMQ
     end
 
     def create_client
-      # Pre-validate the options hash
-      if @opts.empty?
-        @opts.merge!(defaults(@data))
-      end
+      require 'rabbitmq/http/client'
 
-      if !@client.nil?
-        return @client
-      else
-        require 'rabbitmq/http/client'
-
-        endpoint = "http://#{@opts[:host]}:#{@opts[:port]}"
-        @client = RabbitMQ::HTTP::Client.new(
-          endpoint,
-          username: @opts[:username],
-          password: @opts[:password],
-          ssl: @opts[:ssl]
-        )
-        return @client
-      end
+      @opts.merge!(defaults)
+      return RabbitMQ::HTTP::Client.new(
+        "http://#{@opts[:host]}:#{@opts[:port]}",
+        username: @opts[:username],
+        password: @opts[:password],
+        ssl: @opts[:ssl]
+      )
     end
 
     private
