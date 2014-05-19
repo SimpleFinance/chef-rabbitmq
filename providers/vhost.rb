@@ -31,7 +31,7 @@ action :add do
   @client.create_vhost(@vhost)
   @client.update_permissions_of(
     @vhost,
-    @manager.admin,
+    rabbitmq_admin,
     read: '',
     write: '',
     configure: '.*'

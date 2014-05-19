@@ -21,11 +21,17 @@
 
 module RabbitMQ
   module Management
+    @@admin = 'guest'
+
+    def rabbitmq_admin
+      @@admin
+    end
 
     def new_management_object(opts={})
       require 'rabbitmq/http/client'
 
       opts = defaults.merge!(opts)
+      @@admin = opts[:username]
       return RabbitMQ::HTTP::Client.new(
         "http://#{opts[:host]}:#{opts[:port]}",
         username: opts[:username],
