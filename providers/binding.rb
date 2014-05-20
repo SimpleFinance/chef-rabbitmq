@@ -44,6 +44,13 @@ action :declare do
     configure: '.*'
   )
   @client.bind_queue(@vhost, @queue, @exchange, @routing_key)
+  @client.update_permissions_of(
+    @vhost,
+    rabbitmq_admin_user,
+    read: '',
+    write: '',
+    configure: '.*'
+  )
 end
 
 action :delete do
