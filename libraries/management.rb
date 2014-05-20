@@ -20,50 +20,39 @@
 # Administrative management helpers for a RabbitMQ node
 
 module RabbitMQ
-  class Manager
-    attr_accessor(:opts, :client)
+  module Management
+    @@client = nil
 
-    def initialize(data={})
-      @opts   = {}
-      @data   = data || {}
-      @client = create_client
-    end
-
-    def admin
-      return @opts[:username]
-    end
-
-    def create_client
-      # Pre-validate the options hash
-      if @opts.empty?
-        @opts.merge!(defaults(@data))
-      end
-
-      if !@client.nil?
-        return @client
+    def rabbitmq_client
+      if @@client
+        return @@client
       else
         require 'rabbitmq/http/client'
-
-        endpoint = "http://#{@opts[:host]}:#{@opts[:port]}"
-        @client = RabbitMQ::HTTP::Client.new(
-          endpoint,
-          username: @opts[:username],
-          password: @opts[:password],
-          ssl: @opts[:ssl]
+        @@client = RabbitMQ::HTTP::Client.new(
+          "http://#{opts[:host]}:#{opts[:port]}",
+          username: opts[:username],
+          password: opts[:password],
+          ssl: opts[:ssl]
         )
-        return @client
+        return @@client
       end
+    end
+
+    # A small handle to give us either node[:rabbitmq][:admin_user] or 'guest',
+    # one of the two being the user to hit the API with.
+    def rabbitmq_admin_user
+      return opts[:username]
     end
 
     private
 
-    def defaults(data={})
+    def opts
       return {
-        host: data.fetch('admin_host', '127.0.0.1'),
-        port: data.fetch('admin_port', 15672),
-        username: data.fetch('admin_user', 'guest'),
-        password: data.fetch('admin_pass', 'guest'),
-        ssl: data.fetch('admin_ssl_opts', {})
+        host: node.fetch(:rabbitmq, {})['admin_host'] || '127.0.0.1',
+        port: node.fetch(:rabbitmq, {})['admin_port'] || 15672,
+        username: node.fetch(:rabbitmq, {})['admin_user'] || 'guest',
+        password: node.fetch(:rabbitmq, {})['admin_pass'] || 'guest',
+        ssl: node.fetch(:rabbitmq, {})['admin_ssl_opts'] || {}
       }
     end
   end
