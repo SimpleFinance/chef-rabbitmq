@@ -22,23 +22,22 @@
 module RabbitMQ
   module Management
     DEFAULTS = {
-      admin_host: '127.0.0.1',
-      admin_port: 15672,
-      admin_user: 'guest',
-      admin_pass: 'guest',
-      admin_ssl_opts: {}
+      'admin_host' => '127.0.0.1',
+      'admin_port' => 15672,
+      'admin_user' => 'guest',
+      'admin_pass' => 'guest',
+      'admin_ssl_opts' => {}
     }
 
     def rabbitmq_client
       require 'rabbitmq/http/client'
       opts = DEFAULTS.merge(node.fetch(:rabbitmq, {}))
-      @@client = RabbitMQ::HTTP::Client.new(
-        "http://#{opts[:admin_host]}:#{opts[:admin_port]}",
-        username: opts[:admin_user],
-        password: opts[:admin_pass],
-        ssl: opts[:admin_ssl_opts]
+      return RabbitMQ::HTTP::Client.new(
+        "http://#{opts['admin_host']}:#{opts['admin_port']}",
+        username: opts['admin_user'],
+        password: opts['admin_pass'],
+        ssl: opts['admin_ssl_opts']
       )
-      return @@client
     end
 
     # A small handle to give us either node[:rabbitmq][:admin_user] or 'guest',
