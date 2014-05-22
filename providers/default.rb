@@ -19,8 +19,6 @@
 #
 # Manages a RabbitMQ installation
 
-require 'securerandom'
-
 def initialize(new_resource, run_context)
   super
   @nodename   = new_resource.nodename
@@ -38,8 +36,7 @@ def initialize(new_resource, run_context)
   @plugins    = rabbitmq_execute_resource('install plugins')
 end
 
-# TODO : Un-hardcode paths
-# TODO : Multiplatform ...
+# TODO: Un-hardcode paths
 action :install do
 
   # Install the rabbitmq_http_api_client and amqp gems
@@ -81,7 +78,7 @@ action :install do
   @cookie.run_action(:create)
 
   # Install the management plugin
-  @plugins.command(plugins_to_enable_command)
+  @plugins.command('rabbitmq-plugins enable rabbitmq_management')
   @plugins.user('root')
   @plugins.run_action(:run)
 
@@ -96,9 +93,7 @@ action :install do
 
   # A bit ugly, but works.
   new_resource.updated_by_last_action(
-    @dep_gems.collect do |g| 
-      g.updated_by_last_action? 
-    end.any?                            ||
+    @dep_gems.collect {|g| g.updated_by_last_action? }.any? ||
     @source_pkg.updated_by_last_action? ||
     @installer.updated_by_last_action?  ||
     @service.updated_by_last_action?    || 
@@ -141,35 +136,4 @@ end
 # Ensure you always return an array here, so we can add dependencies easily.
 def rabbitmq_dependency_gems
   return [Chef::Resource::ChefGem.new('rabbitmq_http_api_client', @run_context)]
-end
-
-# This is the worst part of this cookbook for sure, but we don't have a choice
-# unfortunately. Shell out to enable the management plugin, which we'll need in
-# order to add all the topology items.
-def plugins_to_enable_command
-  return "rabbitmq-plugins enable rabbitmq_management"
-end
-
-# If the user provides new_resource.cookie, the cookie will be populated with
-# that value. Otherwise, generate a random hexidecimal string (any alphanumeric
-# string works, however).
-def render_erlang_cookie(str)
-  if str.nil?
-    return SecureRandom.hex
-  else
-    return str
-  end
-end
-
-# Returns true if the RabbitMQ server requires a restart (so that it can for
-# example pick up configuration changes).
-def requires_restart?
-  return @cookie.updated_by_last_action?
-end
-
-# Sane default values to render into the RabbitMQ environment file.
-def default_env
-  return {
-    'NODENAME' => @nodename
-  }
 end
