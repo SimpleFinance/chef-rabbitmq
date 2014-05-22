@@ -23,17 +23,16 @@ include RabbitMQ::Management
 
 def initialize(new_resource, run_context)
   super
+  @client = rabbitmq_client
   @vhost  = new_resource.vhost
   @queue  = new_resource.queue
   @attrs  = new_resource.attrs
 end
 
 action :declare do
-  client = rabbitmq_client
-  client.declare_queue(@vhost, @queue, @attrs)
+  @client.declare_queue(@vhost, @queue, @attrs)
 end
 
 action :delete do
-  client = rabbitmq_client
-  client.delete_vhost(@vhost, @queue)
+  @client.delete_vhost(@vhost, @queue)
 end

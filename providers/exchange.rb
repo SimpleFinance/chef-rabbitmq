@@ -23,14 +23,14 @@ include RabbitMQ::Management
 
 def initialize(new_resource, run_context)
   super
+  @client   = rabbitmq_client
   @vhost    = new_resource.vhost
   @exchange = new_resource.exchange
   @attrs    = new_resource.attrs
 end
 
 action :declare do
-  client = rabbitmq_client
-  client.declare_exchange(@vhost, @exchange, @attrs)
+  @client.declare_exchange(@vhost, @exchange, @attrs)
 end
 
 action :delete do
