@@ -79,7 +79,7 @@ action :install do
   # The process for changing the Erlang cookie is to stop the Erlang node,
   # render out the new cookie, start the Erlang node, then reset the RabbitMQ
   # application.
-  if !@cookie_str.nil? && (!cookie_exists || !cookies_equal?)
+  if cookie_should_be_rendered?
     @service.provider(Chef::Provider::Service::Init)
     @service.run_action(:stop)
 
@@ -149,10 +149,10 @@ def cookie_path
   return '/var/lib/rabbitmq/.erlang.cookie'
 end
 
-def cookies_equal?
-  return ::File.read(cookie_path) != @cookie_str
-end
-
-def cookie_exists?
-  return ::File.exists?(cookie_path)
+def cookie_should_be_rendered?
+  if @cookie_str.nil?
+    return false
+  else
+    return ::File.exists?(cookie_path) || ::File.read(cookie_path) != @cookie_str
+  end
 end
