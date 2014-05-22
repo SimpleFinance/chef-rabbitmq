@@ -79,11 +79,11 @@ action :install do
   # The process for changing the Erlang cookie is to stop the Erlang node,
   # render out the new cookie, start the Erlang node, then reset the RabbitMQ
   # application.
-  if !@cookie_str.nil? && ::File.read('/var/lib/rabbitmq/.erlang.cookie') != @cookie_str
+  if !@cookie_str.nil? && (!cookie_exists || !cookies_equal?)
     @service.provider(Chef::Provider::Service::Init)
     @service.run_action(:stop)
 
-    @cookie.path('/var/lib/rabbitmq/.erlang.cookie')
+    @cookie.path(cookie_path)
     @cookie.content(@cookie_str)
     @cookie.owner(@user)
     @cookie.group(@user)
@@ -143,4 +143,16 @@ end
 # Ensure you always return an array here, so we can add dependencies easily.
 def rabbitmq_dependency_gems
   return [Chef::Resource::ChefGem.new('rabbitmq_http_api_client', @run_context)]
+end
+
+def cookie_path
+  return '/var/lib/rabbitmq/.erlang.cookie'
+end
+
+def cookies_equal?
+  return ::File.read(cookie_path) != @cookie_str
+end
+
+def cookie_exists?
+  return ::File.exists?(cookie_path)
 end
