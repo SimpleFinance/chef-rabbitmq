@@ -153,6 +153,6 @@ def cookie_should_be_rendered?
   if @cookie_str.nil?
     return false
   else
-    return ::File.exists?(cookie_path) || ::File.read(cookie_path) != @cookie_str
+    return !::File.exists?(cookie_path) || ::File.read(cookie_path) != @cookie_str
   end
 end
