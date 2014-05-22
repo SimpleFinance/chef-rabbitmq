@@ -20,51 +20,30 @@
 # Administrative management helpers for a RabbitMQ node
 
 module RabbitMQ
-  class Manager
-    attr_accessor(:opts, :client)
+  module Management
+    DEFAULTS = {
+      'admin_host' => '127.0.0.1',
+      'admin_port' => 15672,
+      'admin_user' => 'guest',
+      'admin_pass' => 'guest',
+      'admin_ssl_opts' => {}
+    }
 
-    def initialize(data={})
-      @opts   = {}
-      @data   = data || {}
-      @client = create_client
+    def rabbitmq_client
+      require 'rabbitmq/http/client'
+      opts = DEFAULTS.merge(node.fetch(:rabbitmq, {}))
+      return RabbitMQ::HTTP::Client.new(
+        "http://#{opts['admin_host']}:#{opts['admin_port']}",
+        username: opts['admin_user'],
+        password: opts['admin_pass'],
+        ssl: opts['admin_ssl_opts']
+      )
     end
 
-    def admin
-      return @opts[:username]
-    end
-
-    def create_client
-      # Pre-validate the options hash
-      if @opts.empty?
-        @opts.merge!(defaults(@data))
-      end
-
-      if !@client.nil?
-        return @client
-      else
-        require 'rabbitmq/http/client'
-
-        endpoint = "http://#{@opts[:host]}:#{@opts[:port]}"
-        @client = RabbitMQ::HTTP::Client.new(
-          endpoint,
-          username: @opts[:username],
-          password: @opts[:password],
-          ssl: @opts[:ssl]
-        )
-        return @client
-      end
-    end
-
-    private
-
-    def defaults(data={})
-      return {
-        host: data.fetch('admin_host', '127.0.0.1'),
-        port: data.fetch('admin_port', 15672),
-        username: data.fetch('admin_user', 'guest'),
-        password: data.fetch('admin_pass', 'guest'),
-        ssl: data.fetch('admin_ssl_opts', {})
-      }
+    # A small handle to give us either node[:rabbitmq][:admin_user] or 'guest',
+    # one of the two being the user to hit the API with.
+    def rabbitmq_admin_user
+      return node.fetch(:rabbitmq, {})['admin_user'] || DEFAULTS['admin_user']
     end
   end
 end

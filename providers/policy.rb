@@ -19,10 +19,11 @@
 #
 # Manage policies on RabbitMQ virtualhosts
 
+include RabbitMQ::Management
+
 def initialize(new_resource, run_context)
   super
-  @manager      = RabbitMQ::Manager.new(node[:rabbitmq])
-  @client       = @manager.client
+  @client       = rabbitmq_client
   @name         = new_resource.name
   @vhost        = new_resource.vhost
   @definition   = new_resource.definition

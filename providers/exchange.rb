@@ -19,9 +19,11 @@
 #
 # Create and delete virtualhosts
 
+include RabbitMQ::Management
+
 def initialize(new_resource, run_context)
   super
-  @client   = RabbitMQ::Manager.new(node[:rabbitmq]).client
+  @client   = rabbitmq_client
   @vhost    = new_resource.vhost
   @exchange = new_resource.exchange
   @attrs    = new_resource.attrs

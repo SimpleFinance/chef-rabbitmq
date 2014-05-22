@@ -19,9 +19,11 @@
 #
 # Create, delete, and modify RabbitMQ users
 
+include RabbitMQ::Management
+
 def initialize(new_resource, run_context)
   super
-  @client      = RabbitMQ::Manager.new(node[:rabbitmq]).client
+  @client      = rabbitmq_client
   @user        = new_resource.user
   @tags        = new_resource.tags
   @password    = new_resource.password
