@@ -32,7 +32,8 @@ def initialize(new_resource, run_context)
   @service    = rabbitmq_service('rabbitmq-server')
   @logdir     = rabbitmq_directory_resource('/var/log/rabbitmq')
   @mnesiadir  = rabbitmq_directory_resource('/var/lib/rabbitmq/mnesia')
-  @cookie     = rabbitmq_file_resource('/var/lib/rabbitmq/.erlang_cookie')
+  @cookie     = rabbitmq_file_resource('/var/lib/rabbitmq/.erlang.cookie')
+  @reset      = rabbitmq_execute_resource('reset rabbitmq')
   @plugins    = rabbitmq_execute_resource('install plugins')
 end
 
@@ -69,26 +70,32 @@ action :install do
   @mnesiadir.recursive(true)
   @mnesiadir.run_action(:create)
 
-  # An erlang cookie is necessary for clustering
-  @cookie.path('/var/lib/rabbitmq/.erlang_cookie')
-  @cookie.content(render_erlang_cookie(@cookie_str))
-  @cookie.owner(@user)
-  @cookie.group(@user)
-  @cookie.mode(00400)
-  @cookie.run_action(:create)
-
   # Install the management plugin
   @plugins.command('rabbitmq-plugins enable rabbitmq_management')
   @plugins.user('root')
   @plugins.run_action(:run)
 
-  # We need to restart ourselves first time. Otherwise, only restart if the
-  # Erlang cookie has changed.
-  @service.provider(Chef::Provider::Service::Init)
-  if requires_restart?
-    @service.run_action(:restart)
-  else
-    @service.run_action(:nothing)
+  # An erlang cookie is necessary for clustering
+  # The process for changing the Erlang cookie is to stop the Erlang node,
+  # render out the new cookie, start the Erlang node, then reset the RabbitMQ
+  # application.
+  if ::File.read('/var/lib/rabbitmq/.erlang.cookie') != @cookie_str
+    @service.provider(Chef::Provider::Service::Init)
+    @service.run_action(:stop)
+
+    @cookie.path('/var/lib/rabbitmq/.erlang.cookie')
+    @cookie.content(@cookie_str)
+    @cookie.owner(@user)
+    @cookie.group(@user)
+    @cookie.mode(00400)
+    @cookie.run_action(:create)
+
+    @service.run_action(:start)
+
+    # This picks up the new Erlang cookie value.
+    @reset.command('rabbitmqctl stop_app && rabbitmqctl reset && rabbitmqctl start_app')
+    @reset.user('root')
+    @reset.run_action(:run)
   end
 
   # A bit ugly, but works.
