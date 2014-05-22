@@ -43,7 +43,7 @@ module RabbitMQ
     # A small handle to give us either node[:rabbitmq][:admin_user] or 'guest',
     # one of the two being the user to hit the API with.
     def rabbitmq_admin_user
-      return opts['admin_user']
+      return node.fetch(:rabbitmq, {})['admin_user'] || DEFAULTS['admin_user']
     end
   end
 end
