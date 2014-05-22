@@ -19,8 +19,6 @@
 #
 # Manages a RabbitMQ installation
 
-require 'securerandom'
-
 def initialize(new_resource, run_context)
   super
   @nodename   = new_resource.nodename
@@ -34,12 +32,12 @@ def initialize(new_resource, run_context)
   @service    = rabbitmq_service('rabbitmq-server')
   @logdir     = rabbitmq_directory_resource('/var/log/rabbitmq')
   @mnesiadir  = rabbitmq_directory_resource('/var/lib/rabbitmq/mnesia')
-  @cookie     = rabbitmq_file_resource('/var/lib/rabbitmq/.erlang_cookie')
+  @cookie     = rabbitmq_file_resource('/var/lib/rabbitmq/.erlang.cookie')
+  @reset      = rabbitmq_execute_resource('reset rabbitmq')
   @plugins    = rabbitmq_execute_resource('install plugins')
 end
 
-# TODO : Un-hardcode paths
-# TODO : Multiplatform ...
+# TODO: Un-hardcode paths
 action :install do
 
   # Install the rabbitmq_http_api_client and amqp gems
@@ -72,33 +70,37 @@ action :install do
   @mnesiadir.recursive(true)
   @mnesiadir.run_action(:create)
 
-  # An erlang cookie is necessary for clustering
-  @cookie.path('/var/lib/rabbitmq/.erlang_cookie')
-  @cookie.content(render_erlang_cookie(@cookie_str))
-  @cookie.owner(@user)
-  @cookie.group(@user)
-  @cookie.mode(00400)
-  @cookie.run_action(:create)
-
   # Install the management plugin
-  @plugins.command(plugins_to_enable_command)
+  @plugins.command('rabbitmq-plugins enable rabbitmq_management')
   @plugins.user('root')
   @plugins.run_action(:run)
 
-  # We need to restart ourselves first time. Otherwise, only restart if the
-  # Erlang cookie has changed.
-  @service.provider(Chef::Provider::Service::Init)
-  if requires_restart?
-    @service.run_action(:restart)
-  else
-    @service.run_action(:nothing)
+  # An erlang cookie is necessary for clustering
+  # The process for changing the Erlang cookie is to stop the Erlang node,
+  # render out the new cookie, start the Erlang node, then reset the RabbitMQ
+  # application.
+  if !@cookie_str.nil? && ::File.read('/var/lib/rabbitmq/.erlang.cookie') != @cookie_str
+    @service.provider(Chef::Provider::Service::Init)
+    @service.run_action(:stop)
+
+    @cookie.path('/var/lib/rabbitmq/.erlang.cookie')
+    @cookie.content(@cookie_str)
+    @cookie.owner(@user)
+    @cookie.group(@user)
+    @cookie.mode(00400)
+    @cookie.run_action(:create)
+
+    @service.run_action(:start)
+
+    # This picks up the new Erlang cookie value.
+    @reset.command('rabbitmqctl stop_app && rabbitmqctl reset && rabbitmqctl start_app')
+    @reset.user('root')
+    @reset.run_action(:run)
   end
 
   # A bit ugly, but works.
   new_resource.updated_by_last_action(
-    @dep_gems.collect do |g| 
-      g.updated_by_last_action? 
-    end.any?                            ||
+    @dep_gems.collect {|g| g.updated_by_last_action? }.any? ||
     @source_pkg.updated_by_last_action? ||
     @installer.updated_by_last_action?  ||
     @service.updated_by_last_action?    || 
@@ -141,35 +143,4 @@ end
 # Ensure you always return an array here, so we can add dependencies easily.
 def rabbitmq_dependency_gems
   return [Chef::Resource::ChefGem.new('rabbitmq_http_api_client', @run_context)]
-end
-
-# This is the worst part of this cookbook for sure, but we don't have a choice
-# unfortunately. Shell out to enable the management plugin, which we'll need in
-# order to add all the topology items.
-def plugins_to_enable_command
-  return "rabbitmq-plugins enable rabbitmq_management"
-end
-
-# If the user provides new_resource.cookie, the cookie will be populated with
-# that value. Otherwise, generate a random hexidecimal string (any alphanumeric
-# string works, however).
-def render_erlang_cookie(str)
-  if str.nil?
-    return SecureRandom.hex
-  else
-    return str
-  end
-end
-
-# Returns true if the RabbitMQ server requires a restart (so that it can for
-# example pick up configuration changes).
-def requires_restart?
-  return @cookie.updated_by_last_action?
-end
-
-# Sane default values to render into the RabbitMQ environment file.
-def default_env
-  return {
-    'NODENAME' => @nodename
-  }
 end
