@@ -23,7 +23,6 @@ include RabbitMQ::Management
 
 def initialize(new_resource, run_context)
   super
-  @client      = rabbitmq_client
   @user        = new_resource.user
   @tags        = new_resource.tags
   @password    = new_resource.password
@@ -45,22 +44,25 @@ end
 
 # Erases the user's permissions on the given virtualhost
 action :clear_permissions do
-  @client.clear_permissions_of(@user, @vhost)
+  client = rabbitmq_client
+  client.clear_permissions_of(@user, @vhost)
 end
 
 # Deletes the user from RabbitMQ
 action :delete do
-  @client.delete_user(@user)
+  client = rabbitmq_client
+  client.delete_user(@user)
 end
 
 private
 
 def add_or_update_user
-  @client.update_user(@user, compile_attributes)
+  client = rabbitmq_client
+  client.update_user(@user, compile_attributes)
   if @permissions && @vhost
     Chef::Log.info("Updating #{@user} permissions to #{@permissions} on #{@vhost}")
     read, write, conf = @permissions.split(" ")
-    @client.update_permissions_of(
+    client.update_permissions_of(
       @vhost, 
       @user, 
       read: read, 

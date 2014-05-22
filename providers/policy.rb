@@ -23,7 +23,6 @@ include RabbitMQ::Management
 
 def initialize(new_resource, run_context)
   super
-  @client       = rabbitmq_client
   @name         = new_resource.name
   @vhost        = new_resource.vhost
   @definition   = new_resource.definition
@@ -38,11 +37,13 @@ action :set do
     return
   end
   attrs = compile_attributes
-  @client.update_policies_of(@vhost, @name, attrs)
+  client = rabbitmq_client
+  client.update_policies_of(@vhost, @name, attrs)
 end
 
 action :clear do
-  @client.clear_policies_of(@vhost, @name)
+  client = rabbitmq_client
+  client.clear_policies_of(@vhost, @name)
 end
 
 private
