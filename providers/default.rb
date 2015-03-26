@@ -45,7 +45,6 @@ action :install do
     gem_resource = Chef::Resource::ChefGem.new(gem, @run_context)
     gem_resource.version(version)
     gem_resource.run_action(:install)
-
   end
 
   @source_pkg.source("https://www.rabbitmq.com/releases/rabbitmq-server/v#{@version}/rabbitmq-server_#{@version}-1_all.deb")
@@ -103,7 +102,6 @@ action :install do
 
   # A bit ugly, but works.
   new_resource.updated_by_last_action(
-    @dep_gems.collect {|g| g.updated_by_last_action? }.any? ||
     @source_pkg.updated_by_last_action? ||
     @installer.updated_by_last_action?  ||
     @service.updated_by_last_action?    ||
