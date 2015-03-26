@@ -41,8 +41,11 @@ end
 action :install do
 
   # Install the rabbitmq_http_api_client and amqp gems
-  @dep_gems.each do |gem|
-    gem.run_action(:install)
+  @dep_gems.each do |gem, version|
+    gem_resource = Chef::Resource::ChefGem.new(gem, @run_context)
+    gem_resource.version(version)
+    gem_resource.run_action(:install)
+
   end
 
   @source_pkg.source("https://www.rabbitmq.com/releases/rabbitmq-server/v#{@version}/rabbitmq-server_#{@version}-1_all.deb")
@@ -103,7 +106,7 @@ action :install do
     @dep_gems.collect {|g| g.updated_by_last_action? }.any? ||
     @source_pkg.updated_by_last_action? ||
     @installer.updated_by_last_action?  ||
-    @service.updated_by_last_action?    || 
+    @service.updated_by_last_action?    ||
     @logdir.updated_by_last_action?     ||
     @mnesiadir.updated_by_last_action?  ||
     @cookie.updated_by_last_action? )
@@ -142,7 +145,7 @@ end
 
 # Ensure you always return an array here, so we can add dependencies easily.
 def rabbitmq_dependency_gems
-  return [Chef::Resource::ChefGem.new('rabbitmq_http_api_client', @run_context)]
+  return {'rabbitmq_http_api_client' => '1.3.0'}
 end
 
 def cookie_path
