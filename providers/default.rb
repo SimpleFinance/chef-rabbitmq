@@ -39,7 +39,6 @@ end
 
 # TODO: Un-hardcode paths
 action :install do
-
   # Install the rabbitmq_http_api_client and amqp gems
   @dep_gems.each do |gem, version|
     gem_resource = Chef::Resource::ChefGem.new(gem, @run_context)
@@ -154,6 +153,6 @@ def cookie_should_be_rendered?
   if @cookie_str.nil?
     return false
   else
-    return !::File.exists?(cookie_path) || ::File.read(cookie_path) != @cookie_str
+    return !::File.exist?(cookie_path) || ::File.read(cookie_path) != @cookie_str
   end
 end
