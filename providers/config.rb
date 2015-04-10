@@ -90,11 +90,11 @@ end
 
 def render_erlang_parameters(name, hash={})
   strs = hash.collect do |k,v|
-    str = "    {#{k.to_s}, "
+    str = "    {#{k}, "
     if v.is_a?(Hash)
       str << "[\n"
       buffer = " "*(8 + k.length)
-      str << v.collect{|p,n| "#{buffer}{#{p.to_s}, #{n.to_s}}"}.join(",\n")
+      str << v.collect{|p,n| "#{buffer}{#{p}, #{n}}"}.join(",\n")
       str << "]}"
     else
       str << v.to_s

@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
 Vagrant.configure('2') do |config|
-
   config.vm.define :rabbitmq do |rabbitmq|
     rabbitmq.vm.hostname = 'rabbitmq'
     rabbitmq.vm.box = ENV['VAGRANT_BOX'] || 'opscode_ubuntu-12.04_chef-provisionerless'
@@ -24,4 +23,3 @@ Vagrant.configure('2') do |config|
     end
   end
 end
-
